@@ -169,14 +169,15 @@ function Transportation() {
           <span>Find my options →</span>
         </Link>
 
-        <div className="transport-card">
+        <Link className="transport-card" to="/offer-a-ride">
           <span className="transport-icon">🚘</span>
           <h2>I Can Give a Ride</h2>
           <p>
-            Share your existing commute with other airport community members.
+            See whether airport workers may fit your existing commute before
+            creating an account.
           </p>
-          <span>Coming next</span>
-        </div>
+          <span>See potential riders →</span>
+        </Link>
 
         <div className="transport-card">
           <span className="transport-icon">🚌</span>
@@ -199,6 +200,10 @@ function Transportation() {
     </main>
   );
 }
+
+/* =========================================================
+   RIDER FLOW
+   ========================================================= */
 
 function FindRide() {
   const navigate = useNavigate();
@@ -244,7 +249,9 @@ function FindRide() {
             <div className="direction-grid">
               <button
                 type="button"
-                className={direction === "to-work" ? "direction active" : "direction"}
+                className={
+                  direction === "to-work" ? "direction active" : "direction"
+                }
                 onClick={() => setDirection("to-work")}
               >
                 <strong>✈️ TO WORK</strong>
@@ -253,7 +260,9 @@ function FindRide() {
 
               <button
                 type="button"
-                className={direction === "home" ? "direction active" : "direction"}
+                className={
+                  direction === "home" ? "direction active" : "direction"
+                }
                 onClick={() => setDirection("home")}
               >
                 <strong>🏠 RIDE HOME</strong>
@@ -262,7 +271,9 @@ function FindRide() {
 
               <button
                 type="button"
-                className={direction === "both" ? "direction active" : "direction"}
+                className={
+                  direction === "both" ? "direction active" : "direction"
+                }
                 onClick={() => setDirection("both")}
               >
                 <strong>↔️ BOTH</strong>
@@ -494,24 +505,15 @@ function Register() {
           Your commute search is saved. You won't have to enter it again.
         </p>
 
-        <button
-          className="social-button"
-          onClick={() => navigate("/profile")}
-        >
+        <button className="social-button" onClick={() => navigate("/profile")}>
           <span>G</span> Continue with Google
         </button>
 
-        <button
-          className="social-button"
-          onClick={() => navigate("/profile")}
-        >
+        <button className="social-button" onClick={() => navigate("/profile")}>
           <span>f</span> Continue with Facebook
         </button>
 
-        <button
-          className="social-button"
-          onClick={() => navigate("/profile")}
-        >
+        <button className="social-button" onClick={() => navigate("/profile")}>
           <span>●</span> Continue with Apple
         </button>
 
@@ -519,10 +521,7 @@ function Register() {
           <span>or</span>
         </div>
 
-        <button
-          className="email-button"
-          onClick={() => navigate("/profile")}
-        >
+        <button className="email-button" onClick={() => navigate("/profile")}>
           Sign up with email
         </button>
 
@@ -589,10 +588,6 @@ function Profile() {
         <button className="continue-button" type="submit">
           Reveal My Matches →
         </button>
-
-        <p className="privacy-note verification-hidden">
-          Airport-community verification capability will be added later.
-        </p>
       </form>
     </main>
   );
@@ -669,7 +664,9 @@ function MatchCard(props) {
         </div>
 
         <div className="score-row">
-          <strong>{props.score} {props.direction}</strong>
+          <strong>
+            {props.score} {props.direction}
+          </strong>
         </div>
 
         <div className="commute-status">
@@ -695,6 +692,7 @@ function MatchCard(props) {
     </div>
   );
 }
+
 function MatchProfile() {
   const navigate = useNavigate();
 
@@ -974,11 +972,7 @@ function VoiceTextInput() {
 
       <div className="voice-controls">
         {!listening ? (
-          <button
-            type="button"
-            className="voice-start"
-            onClick={startDictation}
-          >
+          <button type="button" className="voice-start" onClick={startDictation}>
             🎤 Start Dictation
           </button>
         ) : (
@@ -988,11 +982,7 @@ function VoiceTextInput() {
               Listening…
             </div>
 
-            <button
-              type="button"
-              className="voice-stop"
-              onClick={stopDictation}
-            >
+            <button type="button" className="voice-stop" onClick={stopDictation}>
               ■ Stop Dictation
             </button>
           </>
@@ -1093,6 +1083,1072 @@ function RequestSent() {
     </main>
   );
 }
+
+/* =========================================================
+   DRIVER / OFFER-A-RIDE FLOW
+   ========================================================= */
+
+function OfferRide() {
+  const navigate = useNavigate();
+  const [direction, setDirection] = useState("to-work");
+
+  function search(event) {
+    event.preventDefault();
+
+    const form = new FormData(event.currentTarget);
+
+    const offerData = {
+      direction,
+      location: form.get("location"),
+      destination: form.get("destination"),
+      arrive: form.get("arrive"),
+      leave: form.get("leave"),
+      days: form.getAll("days"),
+      seats: form.get("seats"),
+      frequency: form.get("frequency"),
+      deviation: form.get("deviation"),
+    };
+
+    sessionStorage.setItem(
+      "airportCommunityRideOffer",
+      JSON.stringify(offerData)
+    );
+
+    navigate("/rider-preview");
+  }
+
+  return (
+    <main className="page flow-page">
+      <div className="flow-card wide-flow">
+        <span className="eyebrow">OFFER A RIDE</span>
+
+        <h1>Could someone share your commute?</h1>
+
+        <p className="flow-intro">
+          Tell us about the trip you're already making. We'll look for airport
+          workers whose transportation needs may fit your route and schedule.
+        </p>
+
+        <form onSubmit={search}>
+          <fieldset>
+            <legend>When could you offer a ride?</legend>
+
+            <div className="direction-grid">
+              <button
+                type="button"
+                className={
+                  direction === "to-work" ? "direction active" : "direction"
+                }
+                onClick={() => setDirection("to-work")}
+              >
+                <strong>✈️ TO WORK</strong>
+                <span>I can take someone to the airport</span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  direction === "home" ? "direction active" : "direction"
+                }
+                onClick={() => setDirection("home")}
+              >
+                <strong>🏠 RIDE HOME</strong>
+                <span>I can take someone home after work</span>
+              </button>
+
+              <button
+                type="button"
+                className={
+                  direction === "both" ? "direction active" : "direction"
+                }
+                onClick={() => setDirection("both")}
+              >
+                <strong>↔️ BOTH</strong>
+                <span>I may be able to help both ways</span>
+              </button>
+            </div>
+          </fieldset>
+
+          <label>
+            Starting Area
+            <input
+              name="location"
+              required
+              placeholder="Enter an address or nearby intersection"
+            />
+          </label>
+
+          <div className="location-privacy">
+            <strong>🔒 Your location stays private.</strong>
+            <p>
+              A specific starting point improves route matching but is never
+              displayed to other members. You can use a nearby intersection
+              instead.
+            </p>
+          </div>
+
+          <label>
+            Airport Destination
+            <select name="destination" required defaultValue="">
+              <option value="" disabled>
+                Select your airport work area
+              </option>
+
+              {destinations.map((destination) => (
+                <option key={destination}>{destination}</option>
+              ))}
+            </select>
+          </label>
+
+          {(direction === "to-work" || direction === "both") && (
+            <label>
+              What time do you normally arrive at work?
+              <input name="arrive" type="time" required />
+            </label>
+          )}
+
+          {(direction === "home" || direction === "both") && (
+            <label>
+              What time do you normally leave work?
+              <input name="leave" type="time" required />
+            </label>
+          )}
+
+          <fieldset>
+            <legend>Which days do you normally make this commute?</legend>
+
+            <div className="day-grid">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
+                <label className="day-choice" key={day}>
+                  <input name="days" value={day} type="checkbox" />
+                  <span>{day}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <label>
+            How many passenger seats could you normally offer?
+            <select name="seats" required defaultValue="">
+              <option value="" disabled>
+                Select seats available
+              </option>
+              <option value="1">1 seat</option>
+              <option value="2">2 seats</option>
+              <option value="3">3 seats</option>
+              <option value="4+">4 or more seats</option>
+            </select>
+          </label>
+
+          <label>
+            What type of ride sharing interests you?
+            <select name="frequency" required defaultValue="">
+              <option value="" disabled>
+                Select one
+              </option>
+              <option value="regular">Regular riders</option>
+              <option value="occasional">Occasional riders</option>
+              <option value="either">Regular or occasional</option>
+            </select>
+          </label>
+
+          <fieldset>
+            <legend>
+              How far would you consider going off your normal route?
+            </legend>
+
+            <p className="field-help">
+              This helps us avoid showing riders who would make your commute
+              impractical.
+            </p>
+
+            <div className="deviation-grid">
+              <label className="deviation-choice">
+                <input
+                  type="radio"
+                  name="deviation"
+                  value="route-only"
+                  required
+                />
+                <strong>Stay on my route</strong>
+                <span>Very little deviation</span>
+              </label>
+
+              <label className="deviation-choice">
+                <input type="radio" name="deviation" value="5-minutes" />
+                <strong>Up to 5 minutes</strong>
+                <span>Small detour</span>
+              </label>
+
+              <label className="deviation-choice">
+                <input type="radio" name="deviation" value="10-minutes" />
+                <strong>Up to 10 minutes</strong>
+                <span>Moderate detour</span>
+              </label>
+
+              <label className="deviation-choice">
+                <input type="radio" name="deviation" value="flexible" />
+                <strong>I'm flexible</strong>
+                <span>Show me good matches</span>
+              </label>
+            </div>
+          </fieldset>
+
+          <button className="continue-button" type="submit">
+            Find Potential Riders →
+          </button>
+        </form>
+      </div>
+    </main>
+  );
+}
+
+function RiderPreview() {
+  const navigate = useNavigate();
+
+  let offer = {};
+
+  try {
+    offer = JSON.parse(
+      sessionStorage.getItem("airportCommunityRideOffer") || "{}"
+    );
+  } catch {
+    offer = {};
+  }
+
+  const directionLabel =
+    offer.direction === "home"
+      ? "RIDE HOME"
+      : offer.direction === "both"
+      ? "TO WORK + HOME"
+      : "TO WORK";
+
+  return (
+    <main className="page preview-page">
+      <div className="preview-heading">
+        <span className="eyebrow">RIDER PREVIEW</span>
+
+        <h1>Your commute may be useful to other airport workers.</h1>
+
+        <p>
+          {offer.location || "Your starting area"} →{" "}
+          {offer.destination || "Airport"}
+        </p>
+      </div>
+
+      <div className="preview-summary">
+        <div>
+          <small>RIDES OFFERED</small>
+          <strong>{directionLabel}</strong>
+        </div>
+
+        {offer.seats && (
+          <div>
+            <small>AVAILABLE</small>
+            <strong>
+              {offer.seats} {offer.seats === "1" ? "seat" : "seats"}
+            </strong>
+          </div>
+        )}
+
+        {offer.arrive && (
+          <div>
+            <small>ARRIVE</small>
+            <strong>{offer.arrive}</strong>
+          </div>
+        )}
+
+        {offer.leave && (
+          <div>
+            <small>LEAVE</small>
+            <strong>{offer.leave}</strong>
+          </div>
+        )}
+      </div>
+
+      <div className="driver-opportunity-card">
+        <div className="opportunity-number">4</div>
+
+        <div>
+          <span className="result-label">POTENTIAL RIDERS</span>
+          <h2>Airport workers may fit your commute.</h2>
+
+          <p>
+            We found transportation needs that overlap with your general route,
+            airport destination and schedule.
+          </p>
+        </div>
+      </div>
+
+      <div className="rider-teaser-grid">
+        <div className="rider-teaser">
+          <div className="blur-avatar">?</div>
+
+          <div>
+            <span className="result-label">RIDER</span>
+            <h3>Potential match</h3>
+            <strong className="compatibility-score">94% TO WORK</strong>
+
+            <p>
+              Pickup area is close to your normal commute corridor.
+            </p>
+
+            <div className="teaser-facts">
+              <span>✈️ Domestic Terminal</span>
+              <span>🕒 Needs to arrive around 5:30 AM</span>
+              <span>📅 4 common days</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rider-teaser">
+          <div className="blur-avatar">?</div>
+
+          <div>
+            <span className="result-label">RIDER</span>
+            <h3>Potential match</h3>
+            <strong className="compatibility-score">88% TO WORK</strong>
+
+            <p>
+              Similar airport schedule with a manageable potential detour.
+            </p>
+
+            <div className="teaser-facts">
+              <span>✈️ Domestic Terminal</span>
+              <span>🕒 Needs to arrive around 5:20 AM</span>
+              <span>📅 3 common days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="driver-value-box">
+        <span className="eyebrow">YOUR NORMAL COMMUTE</span>
+
+        <h2>You don't have to become a taxi driver.</h2>
+
+        <p>
+          The goal is to identify people who already fit the trip you're
+          making. You control which riders you consider, how often you share a
+          ride and how much deviation you're willing to accept.
+        </p>
+      </div>
+
+      <div className="unlock-card">
+        <div>
+          <span className="eyebrow">SEE YOUR POTENTIAL RIDERS</span>
+
+          <h2>Want to see who's compatible?</h2>
+
+          <p>
+            Create a free account to reveal potential riders and compare their
+            transportation needs with your normal commute.
+          </p>
+        </div>
+
+        <button
+          className="continue-button"
+          onClick={() => navigate("/driver-register")}
+        >
+          See Potential Riders →
+        </button>
+
+        <span className="free-note">
+          Free to join • Your exact starting location remains private
+        </span>
+      </div>
+
+      <button
+        className="edit-search"
+        onClick={() => navigate("/offer-a-ride")}
+      >
+        ← Change my commute
+      </button>
+    </main>
+  );
+}
+
+function DriverRegister() {
+  const navigate = useNavigate();
+
+  return (
+    <main className="page flow-page">
+      <div className="flow-card">
+        <span className="eyebrow">REVEAL POTENTIAL RIDERS</span>
+
+        <h1>Create your free account.</h1>
+
+        <p className="flow-intro">
+          Your commute and ride preferences are already saved. You won't have
+          to enter them again.
+        </p>
+
+        <button
+          className="social-button"
+          onClick={() => navigate("/driver-profile")}
+        >
+          <span>G</span> Continue with Google
+        </button>
+
+        <button
+          className="social-button"
+          onClick={() => navigate("/driver-profile")}
+        >
+          <span>f</span> Continue with Facebook
+        </button>
+
+        <button
+          className="social-button"
+          onClick={() => navigate("/driver-profile")}
+        >
+          <span>●</span> Continue with Apple
+        </button>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+
+        <button
+          className="email-button"
+          onClick={() => navigate("/driver-profile")}
+        >
+          Sign up with email
+        </button>
+
+        <p className="privacy-note">
+          Demo registration only. Social sign-in will be connected later.
+        </p>
+      </div>
+    </main>
+  );
+}
+function VoiceProfileInput() {
+  const [text, setText] = useState("");
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useState({ current: null })[0];
+
+  function startDictation() {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert(
+        "Voice dictation is not supported by this browser. You can still type your response."
+      );
+      return;
+    }
+
+    if (listening) return;
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let finalTranscript = text;
+
+    recognition.onstart = () => {
+      setListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      let interimTranscript = "";
+      let newFinalText = finalTranscript;
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const words = event.results[i][0].transcript;
+
+        if (event.results[i].isFinal) {
+          newFinalText +=
+            (newFinalText && !newFinalText.endsWith(" ") ? " " : "") +
+            words;
+
+          finalTranscript = newFinalText;
+        } else {
+          interimTranscript += words;
+        }
+      }
+
+      setText(
+        finalTranscript +
+          (interimTranscript
+            ? `${finalTranscript ? " " : ""}${interimTranscript}`
+            : "")
+      );
+    };
+
+    recognition.onerror = (event) => {
+      console.log("Speech recognition:", event.error);
+
+      if (event.error !== "no-speech") {
+        setListening(false);
+      }
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }
+
+  function stopDictation() {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+
+    setListening(false);
+  }
+
+  return (
+    <div className="voice-profile-input">
+      <textarea
+        rows="4"
+        value={text}
+        onChange={(event) => setText(event.target.value)}
+        placeholder="Example: I leave on time, usually listen to music, and prefer regular riders."
+      />
+
+      <div className="voice-controls">
+        {!listening ? (
+          <button
+            type="button"
+            className="voice-start"
+            onClick={startDictation}
+          >
+            🎤 Start Dictation
+          </button>
+        ) : (
+          <>
+            <div className="listening-indicator">
+              <span></span>
+              Listening…
+            </div>
+
+            <button
+              type="button"
+              className="voice-stop"
+              onClick={stopDictation}
+            >
+              ■ Stop Dictation
+            </button>
+          </>
+        )}
+      </div>
+
+      <small>
+        Review or edit your dictated text before continuing.
+      </small>
+    </div>
+  );
+}
+function DriverProfileSetup() {
+  const navigate = useNavigate();
+
+  function finish(event) {
+    event.preventDefault();
+    navigate("/potential-riders");
+  }
+
+  return (
+    <main className="page flow-page">
+      <form className="flow-card" onSubmit={finish}>
+        <span className="eyebrow">ONE LAST STEP</span>
+
+        <h1>Create your community profile.</h1>
+
+        <p className="flow-intro">
+          We already have your commute, schedule and ride preferences.
+        </p>
+
+        <label>
+          First name
+          <input required placeholder="First name" />
+        </label>
+
+        <label>
+          What best describes you?
+          <select required defaultValue="">
+            <option value="" disabled>
+              Select one
+            </option>
+            <option>I normally drive and can offer rides</option>
+            <option>I can sometimes drive or ride</option>
+          </select>
+        </label>
+
+        <div className="profile-voice-field">
+  <label>
+    Anything riders should know about your ride?{" "}
+    <span className="optional">(optional)</span>
+  </label>
+
+  <VoiceProfileInput />
+</div>
+
+        <div className="route-privacy-box">
+          <strong>Keep it general.</strong>
+
+          <p>
+            Don't enter a license plate, exact home address or other sensitive
+            personal information here.
+          </p>
+        </div>
+
+        <button className="continue-button" type="submit">
+          Reveal Potential Riders →
+        </button>
+      </form>
+    </main>
+  );
+}
+
+function PotentialRiders() {
+  return (
+    <main className="page">
+      <span className="eyebrow">POTENTIAL RIDERS</span>
+
+      <h1>These transportation needs may fit your commute.</h1>
+
+      <p className="page-intro">
+        Exact home addresses aren't shown. Compatibility is based on route,
+        schedule, airport destination and common commute days.
+      </p>
+
+      <div className="match-list">
+        <RiderMatchCard
+          id="angela"
+          initials="AM"
+          name="Angela M."
+          score="94%"
+          direction="TO WORK"
+          current="Gets rides from family"
+          looking="Regular weekday ride"
+          proximity="Pickup area is near your normal route"
+          airport="Domestic Terminal"
+          time="Needs to arrive around 5:30 AM"
+          days="Mon • Tue • Thu • Fri"
+        />
+
+        <RiderMatchCard
+          id="derrick"
+          initials="DB"
+          name="Derrick B."
+          score="88%"
+          direction="TO WORK"
+          current="Uses rideshare apps"
+          looking="Regular or occasional rides"
+          proximity="Small potential deviation from your commute"
+          airport="Domestic Terminal"
+          time="Needs to arrive around 5:20 AM"
+          days="Mon • Wed • Thu"
+        />
+
+        <RiderMatchCard
+          id="sheila"
+          initials="SC"
+          name="Sheila C."
+          score="82%"
+          direction="TO WORK"
+          current="Shares rides when available"
+          looking="Occasional transportation"
+          proximity="General starting area overlaps your corridor"
+          airport="International Terminal"
+          time="Needs to arrive around 5:30 AM"
+          days="Tue • Thu • Fri"
+        />
+      </div>
+    </main>
+  );
+}
+function RiderProfile() {
+  const navigate = useNavigate();
+
+  return (
+    <main className="page match-profile-page">
+      <Link className="back-link" to="/potential-riders">
+        ← Back to potential riders
+      </Link>
+
+      <section className="driver-profile-card">
+        <div className="driver-profile-top">
+          <div className="avatar large-avatar">AM</div>
+
+          <div className="driver-identity">
+            <span className="role-badge">
+              RIDER — NEEDS TRANSPORTATION
+            </span>
+
+            <h1>Angela M.</h1>
+          </div>
+        </div>
+
+        <div className="compatibility-heading">
+          <span className="eyebrow">COMMUTE COMPATIBILITY</span>
+
+          <h2>How Angela's transportation needs fit your commute</h2>
+        </div>
+
+        <div className="direction-match-grid">
+          <div className="direction-match excellent">
+            <div className="direction-match-header">
+              <span>✈️ TO WORK</span>
+              <strong>94%</strong>
+            </div>
+
+            <h3>Excellent match</h3>
+
+            <ul>
+              <li>Angela's pickup area is near your normal route</li>
+              <li>She needs to arrive around 5:30 AM</li>
+              <li>She works in the Domestic Terminal area</li>
+              <li>You have 4 common commute days</li>
+            </ul>
+          </div>
+
+          <div className="direction-match unavailable">
+            <div className="direction-match-header">
+              <span>🏠 RIDE HOME</span>
+              <strong>—</strong>
+            </div>
+
+            <h3>Not currently requested</h3>
+
+            <p>
+              Angela is currently looking for transportation to work.
+            </p>
+          </div>
+        </div>
+
+        <div className="driver-details-grid">
+          <div>
+            <small>CURRENT COMMUTE</small>
+            <strong>Gets rides from family</strong>
+          </div>
+
+          <div>
+            <small>LOOKING FOR</small>
+            <strong>Regular weekday ride</strong>
+          </div>
+
+          <div>
+            <small>AIRPORT DESTINATION</small>
+            <strong>Domestic Terminal</strong>
+          </div>
+
+          <div>
+            <small>NEEDS TO ARRIVE</small>
+            <strong>About 5:30 AM</strong>
+          </div>
+
+          <div>
+            <small>COMMON DAYS</small>
+            <strong>Mon · Tue · Thu · Fri</strong>
+          </div>
+
+          <div>
+            <small>ROUTE IMPACT</small>
+            <strong>Small potential detour</strong>
+          </div>
+        </div>
+
+        <div className="route-privacy-box">
+          <strong>🔒 Location privacy</strong>
+
+          <p>
+            Angela's exact starting address isn't shown. You can see only
+            enough location information to evaluate whether her pickup area
+            could reasonably fit your commute.
+          </p>
+        </div>
+
+        <button
+  className="continue-button"
+  onClick={() => navigate("/offer-ride/angela")}
+>
+  Offer Angela a Ride →
+</button>
+      </section>
+    </main>
+  );
+}
+function RiderMatchCard(props) {
+  return (
+    <div className="match-card v2-match">
+      <div className="avatar">{props.initials}</div>
+
+      <div className="match-main">
+        <div className="match-title">
+          <h2>{props.name}</h2>
+          <span className="role-badge">RIDER — NEEDS TRANSPORTATION</span>
+        </div>
+
+        <div className="score-row">
+          <strong>
+            {props.score} {props.direction}
+          </strong>
+        </div>
+
+        <div className="commute-status">
+          <p>
+            <strong>Current commute:</strong> {props.current}
+          </p>
+
+          <p>
+            <strong>Looking for:</strong> {props.looking}
+          </p>
+        </div>
+
+        <div className="match-facts">
+          <span>📍 {props.proximity}</span>
+          <span>✈️ {props.airport}</span>
+          <span>🕒 {props.time}</span>
+          <span>📅 {props.days}</span>
+        </div>
+      </div>
+
+      <Link className="primary-button" to={`/rider/${props.id}`}>
+  View Rider
+</Link>
+    </div>
+  );
+}
+
+/* =========================================================
+   COMING SOON MODULES
+   ========================================================= */
+function OfferRideToRider() {
+  const navigate = useNavigate();
+  const [offerType, setOfferType] = useState("regular");
+
+  function continueOffer(event) {
+    event.preventDefault();
+
+    sessionStorage.setItem(
+      "driverRideOffer",
+      JSON.stringify({
+        rider: "Angela M.",
+        direction: "to-work",
+        offerType,
+      })
+    );
+
+    navigate("/message-angela");
+  }
+
+  return (
+    <main className="page flow-page">
+      <form className="flow-card wide-flow" onSubmit={continueOffer}>
+        <span className="eyebrow">OFFER A RIDE</span>
+
+        <h1>Offer Angela a ride.</h1>
+
+        <p className="flow-intro">
+          Your morning commute is highly compatible with Angela's
+          transportation needs.
+        </p>
+
+        <div className="message-recipient">
+          <div className="avatar">AM</div>
+
+          <div>
+            <strong>Angela M.</strong>
+            <span>Rider · Looking for transportation to work</span>
+          </div>
+        </div>
+
+        <fieldset>
+          <legend>Ride you can offer</legend>
+
+          <div className="request-direction-grid">
+            <button
+              type="button"
+              className="request-direction selected"
+            >
+              <strong>✈️ TO WORK</strong>
+              <span>94% compatible</span>
+            </button>
+
+            <button
+              type="button"
+              className="request-direction disabled"
+              disabled
+            >
+              <strong>🏠 RIDE HOME</strong>
+              <span>Angela isn't currently requesting this trip</span>
+            </button>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>What type of ride are you offering?</legend>
+
+          <div className="offer-type-grid">
+            <button
+              type="button"
+              className={
+                offerType === "regular"
+                  ? "offer-type selected"
+                  : "offer-type"
+              }
+              onClick={() => setOfferType("regular")}
+            >
+              <strong>Regular</strong>
+              <span>Recurring commute</span>
+            </button>
+
+            <button
+              type="button"
+              className={
+                offerType === "occasional"
+                  ? "offer-type selected"
+                  : "offer-type"
+              }
+              onClick={() => setOfferType("occasional")}
+            >
+              <strong>Occasional</strong>
+              <span>Some workdays</span>
+            </button>
+
+            <button
+              type="button"
+              className={
+                offerType === "one-time"
+                  ? "offer-type selected"
+                  : "offer-type"
+              }
+              onClick={() => setOfferType("one-time")}
+            >
+              <strong>One time</strong>
+              <span>A specific trip</span>
+            </button>
+          </div>
+        </fieldset>
+
+        <div className="route-privacy-box">
+          <strong>🔒 No pickup location is required yet.</strong>
+
+          <p>
+            Angela's exact starting address remains private. If you both choose
+            to connect, you can agree on a convenient pickup point together.
+          </p>
+        </div>
+
+        <button className="continue-button" type="submit">
+          Continue to Message →
+        </button>
+      </form>
+    </main>
+  );
+}
+
+function MessageAngela() {
+  const navigate = useNavigate();
+
+  function sendOffer(event) {
+    event.preventDefault();
+    navigate("/offer-sent");
+  }
+
+  return (
+    <main className="page flow-page">
+      <form className="flow-card wide-flow" onSubmit={sendOffer}>
+        <span className="eyebrow">MESSAGE ANGELA</span>
+
+        <h1>Introduce yourself.</h1>
+
+        <p className="flow-intro">
+          Let Angela know you're interested in sharing your existing commute.
+          You can type or use voice dictation.
+        </p>
+
+        <div className="message-recipient">
+          <div className="avatar">AM</div>
+
+          <div>
+            <strong>Angela M.</strong>
+            <span>✈️ 94% TO WORK compatibility</span>
+          </div>
+        </div>
+
+        <VoiceTextInput />
+
+        <div className="message-safety">
+          <strong>Before you send</strong>
+
+          <p>
+            Keep your first message general. Don't include your exact home
+            address, phone number, license plate or other sensitive
+            information. Pickup details can be discussed after you both choose
+            to connect.
+          </p>
+        </div>
+
+        <button className="continue-button" type="submit">
+          Send Ride Offer →
+        </button>
+      </form>
+    </main>
+  );
+}
+
+function OfferSent() {
+  return (
+    <main className="page flow-page">
+      <div className="success-card">
+        <div className="success-icon">✓</div>
+
+        <span className="eyebrow">RIDE OFFER SENT</span>
+
+        <h1>Angela has your offer.</h1>
+
+        <p>
+          She'll be able to review your commute compatibility and your message
+          before deciding whether she'd like to connect.
+        </p>
+
+        <div className="request-summary">
+          <div>
+            <small>OFFER</small>
+            <strong>✈️ Ride TO WORK</strong>
+          </div>
+
+          <div>
+            <small>COMPATIBILITY</small>
+            <strong>94%</strong>
+          </div>
+
+          <div>
+            <small>STATUS</small>
+            <strong>Awaiting response</strong>
+          </div>
+        </div>
+
+        <div className="route-privacy-box">
+          <strong>Location privacy maintained</strong>
+
+          <p>
+            Angela has not received your exact starting address, and you have
+            not received hers.
+          </p>
+        </div>
+
+        <div className="success-actions">
+          <Link className="primary-button" to="/potential-riders">
+            View Other Riders
+          </Link>
+
+          <Link className="secondary-button" to="/">
+            Return Home
+          </Link>
+        </div>
+      </div>
+    </main>
+  );
+}
+
 function ComingSoon({ title, description }) {
   return (
     <main className="page coming-soon">
@@ -1118,6 +2174,10 @@ function ComingSoon({ title, description }) {
   );
 }
 
+/* =========================================================
+   ROUTES
+   ========================================================= */
+
 function App() {
   return (
     <BrowserRouter>
@@ -1126,6 +2186,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/transportation" element={<Transportation />} />
+
+        {/* Rider flow */}
         <Route path="/find-a-ride" element={<FindRide />} />
         <Route
           path="/transportation-preview"
@@ -1134,10 +2196,23 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/ride-matches" element={<RideMatches />} />
-<Route path="/match/:id" element={<MatchProfile />} />
-<Route path="/request-ride" element={<RequestRide />} />
-<Route path="/message-tasha" element={<MessageTasha />} />
-<Route path="/request-sent" element={<RequestSent />} />
+        <Route path="/match/:id" element={<MatchProfile />} />
+        <Route path="/request-ride" element={<RequestRide />} />
+        <Route path="/message-tasha" element={<MessageTasha />} />
+        <Route path="/request-sent" element={<RequestSent />} />
+
+        {/* Driver flow */}
+        <Route path="/offer-a-ride" element={<OfferRide />} />
+        <Route path="/rider-preview" element={<RiderPreview />} />
+        <Route path="/driver-register" element={<DriverRegister />} />
+        <Route path="/driver-profile" element={<DriverProfileSetup />} />
+        <Route path="/potential-riders" element={<PotentialRiders />} />
+        <Route path="/rider/:id" element={<RiderProfile />} />
+        <Route path="/offer-ride/:id" element={<OfferRideToRider />} />
+        <Route path="/message-angela" element={<MessageAngela />} />
+        <Route path="/offer-sent" element={<OfferSent />} />
+
+        {/* Community modules */}
         <Route
           path="/marketplace"
           element={
