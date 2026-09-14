@@ -48,23 +48,23 @@ export const vanpoolClusters = parseCsv(vanpoolCsv);
 export const demoProfiles = [
   {
     id: "SYN-00012",
-    label: "Early shift — vanpool priority",
-    detail: "30349 · Domestic Terminal · 5:00 AM–1:00 PM",
+    label: "Early-morning employee from South Fulton",
+    detail: "Domestic Terminal · 5:00 AM to 1:00 PM",
   },
   {
     id: "SYN-00198",
-    label: "Day shift — Xpress + MARTA",
-    detail: "30265 · Domestic Terminal · 7:30 AM–3:30 PM",
+    label: "Day-shift employee from Newnan",
+    detail: "Domestic Terminal · 7:30 AM to 3:30 PM",
   },
   {
     id: "SYN-00002",
-    label: "Evening shift — MARTA",
-    detail: "30349 · Domestic Terminal · 4:30 PM–12:30 AM",
+    label: "Evening employee near College Park",
+    detail: "Domestic Terminal · 4:30 PM to 12:30 AM",
   },
   {
     id: "SYN-00003",
-    label: "Overnight — partial transit",
-    detail: "30349 · South Cargo · 7:30 PM–3:30 AM",
+    label: "Overnight employee in South Fulton",
+    detail: "South Cargo · 7:30 PM to 3:30 AM",
   },
 ];
 
