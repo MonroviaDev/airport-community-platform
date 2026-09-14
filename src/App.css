@@ -2371,3 +2371,249 @@ legend {
 .sample-commute .demo-picker select {
   margin-top: 7px;
 }
+
+/* TRANSPORTATION INTEREST */
+
+.interest-page {
+  max-width: 1160px;
+}
+
+.interest-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 750px) minmax(260px, 1fr);
+  gap: 28px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+.interest-form {
+  max-width: none;
+}
+
+.interest-form h1 {
+  font-size: clamp(31px, 5vw, 42px);
+}
+
+.interest-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.interest-choice {
+  display: block !important;
+  margin: 0 !important;
+  cursor: pointer;
+}
+
+.interest-choice input {
+  position: absolute;
+  width: 1px !important;
+  height: 1px;
+  margin: 0 !important;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.interest-choice-content {
+  display: flex;
+  min-height: 150px;
+  height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 17px;
+  border: 1px solid #d6dee9;
+  border-radius: 12px;
+  background: white;
+  transition: 0.15s ease;
+}
+
+.interest-choice:hover .interest-choice-content {
+  border-color: #8db9ee;
+  background: #f8fbff;
+}
+
+.interest-choice input:focus-visible + .interest-choice-content {
+  outline: 3px solid rgba(20, 115, 230, 0.2);
+  outline-offset: 2px;
+}
+
+.interest-choice input:checked + .interest-choice-content {
+  border: 2px solid #1473e6;
+  background: #edf5ff;
+  box-shadow: 0 4px 14px rgba(20, 115, 230, 0.1);
+}
+
+.interest-choice-icon {
+  margin-bottom: 11px;
+  font-size: 24px;
+}
+
+.interest-choice-content strong {
+  color: #16345d;
+  font-size: 14px;
+}
+
+.interest-choice-content small {
+  margin-top: 6px;
+  color: #718096;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.interest-consent {
+  display: flex !important;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 15px;
+  border: 1px solid #dfe5ed;
+  border-radius: 10px;
+  background: #f8fafc;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.interest-consent input {
+  flex: 0 0 auto;
+  width: 18px !important;
+  height: 18px;
+  margin: 1px 0 0 !important;
+  accent-color: #1473e6;
+}
+
+.prototype-storage-note {
+  padding: 13px 15px;
+  border-radius: 10px;
+  background: #eef5ff;
+  color: #536d8d;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.interest-summary-card {
+  padding: 26px;
+  border: 1px solid #dce4ee;
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 10px 28px rgba(22, 52, 93, 0.06);
+}
+
+.interest-summary-card h2 {
+  margin: 8px 0 20px;
+  color: #16345d;
+}
+
+.interest-summary-card dl {
+  margin: 0;
+}
+
+.interest-summary-card dl div {
+  padding: 13px 0;
+  border-top: 1px solid #e8edf3;
+}
+
+.interest-summary-card dt {
+  color: #8996a7;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.interest-summary-card dd {
+  margin: 4px 0 0;
+  color: #30445f;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.interest-summary-card > a {
+  display: inline-block;
+  margin-top: 18px;
+  color: #1473e6;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.interest-success-page {
+  max-width: 760px;
+}
+
+.interest-success-card {
+  max-width: 680px;
+}
+
+.interest-confirmation-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 25px 0;
+  text-align: left;
+}
+
+.interest-confirmation-summary div {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f7f9fc;
+}
+
+.interest-confirmation-summary small,
+.interest-confirmation-summary strong {
+  display: block;
+}
+
+.interest-confirmation-summary small {
+  margin-bottom: 5px;
+  color: #8a98aa;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+}
+
+.interest-confirmation-summary strong {
+  color: #30445f;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.next-step-box {
+  padding: 16px 18px;
+  border: 1px solid #d7ebdf;
+  border-radius: 11px;
+  background: #f1f9f5;
+  color: #315d4a;
+  text-align: left;
+}
+
+.next-step-box p {
+  margin: 5px 0 0;
+  color: #577567;
+  font-size: 13px;
+}
+
+@media (max-width: 850px) {
+  .interest-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .interest-summary-card {
+    order: -1;
+  }
+}
+
+@media (max-width: 650px) {
+  .interest-choice-grid,
+  .interest-confirmation-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .interest-choice-content {
+    min-height: 0;
+  }
+
+  .interest-success-card .success-actions {
+    flex-direction: column;
+  }
+}
