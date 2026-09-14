@@ -1,0 +1,14 @@
+{
+  "model_name": "ATL-Combined-Transit-v1",
+  "description": "Route-specific MARTA and Xpress schedule viability model for synthetic ATL airport workers.",
+  "service_week_start": "2026-09-14",
+  "marta_station_access_miles": 10,
+  "xpress_park_ride_access_miles": 10,
+  "rail_transfer_minutes": 5,
+  "xpress_to_rail_transfer_minutes": 8,
+  "maximum_early_arrival_minutes": 60,
+  "maximum_post_shift_wait_minutes": 60,
+  "marta_gtfs_source": "https://itsmarta.com/google_transit_feed/google_transit.zip",
+  "xpress_gtfs_source": "https://gamobility.info/wp-content/uploads/2025/09/google_transit.zip",
+  "important_note": "Results use ZCTA centroids for home access and current static schedules. They are planning estimates, not guaranteed door-to-door itineraries or real-time service predictions."
+}

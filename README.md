@@ -8,7 +8,9 @@ An independent community and workforce-transportation platform for airport emplo
 - `scripts/analyze-marta-accessibility.js` measures straight-line proximity to the 38 MARTA rail stations.
 - `scripts/analyze-marta-schedule-viability.js` screens shift compatibility against current Airport Station service, including weekday/weekend differences.
 - `scripts/analyze-xpress-accessibility.js` extracts active Xpress park-and-ride nodes and identifies areas where Xpress could extend transit access beyond MARTA's rail catchment.
+- `scripts/analyze-combined-transit-viability.js` joins route-specific MARTA rail journeys, rail transfers, Xpress park-and-ride service, Xpress-to-MARTA transfers, work schedules and airport final-mile allowances.
 - `data/gco-vanpool-integration-v1.json` defines a privacy-safe referral and opt-in integration path for Georgia Commute Options vanpools.
+- `scripts/analyze-vanpool-opportunities.js` groups unresolved transit demand into privacy-safe geographic and schedule opportunity clusters for opt-in recruitment.
 
 The MARTA schedule result is a first-pass service-envelope screen, not a door-to-door itinerary. Xpress results identify geographic candidates, not confirmed airport trips; route-specific schedule and MARTA-transfer testing is the next modeling stage.
 
@@ -17,6 +19,8 @@ Run the analyses with:
 ```bash
 npm run analyze:marta-schedule
 npm run analyze:xpress-access
+npm run analyze:combined-transit
+npm run analyze:vanpool-opportunities
 ```
 
 The raw MARTA and Xpress GTFS folders are intentionally ignored because agencies update their feeds. Generated model outputs are committed for reproducibility.

@@ -1,0 +1,45 @@
+{
+  "model_name": "ATL-Combined-Transit-v1",
+  "synthetic_members": 6521,
+  "marta_full_round_trip": 1892,
+  "xpress_marta_full_round_trip": 154,
+  "partial_transit": 2685,
+  "carpool_vanpool_priority": 1790,
+  "by_shift_family": {
+    "early_am": {
+      "members": 1683,
+      "marta": 86,
+      "xpress_marta": 9,
+      "partial_transit": 400,
+      "carpool_vanpool": 1188
+    },
+    "evening": {
+      "members": 1276,
+      "marta": 307,
+      "xpress_marta": 0,
+      "partial_transit": 411,
+      "carpool_vanpool": 558
+    },
+    "overnight": {
+      "members": 640,
+      "marta": 222,
+      "xpress_marta": 0,
+      "partial_transit": 374,
+      "carpool_vanpool": 44
+    },
+    "midday": {
+      "members": 1302,
+      "marta": 589,
+      "xpress_marta": 5,
+      "partial_transit": 708,
+      "carpool_vanpool": 0
+    },
+    "day": {
+      "members": 1620,
+      "marta": 688,
+      "xpress_marta": 140,
+      "partial_transit": 792,
+      "carpool_vanpool": 0
+    }
+  }
+}

@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "analyze:marta-schedule": "node scripts/analyze-marta-schedule-viability.js",
-    "analyze:xpress-access": "node scripts/analyze-xpress-accessibility.js"
+    "analyze:xpress-access": "node scripts/analyze-xpress-accessibility.js",
+    "analyze:combined-transit": "node scripts/analyze-combined-transit-viability.js",
+    "analyze:vanpool-opportunities": "node scripts/analyze-vanpool-opportunities.js"
   },
   "dependencies": {
     "react": "^19.2.8",

@@ -1,0 +1,10 @@
+{
+  "model_name": "ATL-Vanpool-Opportunity-v1",
+  "description": "Demand-cluster screen for synthetic airport workers without a complete MARTA or Xpress-to-MARTA round trip.",
+  "geographic_grid_degrees": 0.1,
+  "shift_start_bucket_hours": 2,
+  "minimum_cluster_members": 5,
+  "minimum_exact_schedule_subgroup": 5,
+  "synthetic_to_workforce_scale": 10,
+  "important_note": "Clusters show where recruitment and opt-in matching should begin. They do not represent existing GCO vanpools, committed riders, or disclosed member records."
+}

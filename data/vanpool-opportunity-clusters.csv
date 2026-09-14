@@ -1,0 +1,122 @@
+cluster_id,grid_center_latitude,grid_center_longitude,home_counties,home_zctas,airport_destination,shift_family,start_window,synthetic_candidate_members,estimated_workforce_equivalents,no_transit_priority_members,partial_transit_members,dominant_work_days,dominant_shift_start,dominant_shift_end,largest_exact_schedule_subgroup,potential_five_rider_vanpools,opportunity_status
+VAN-001,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30337|30349,Domestic Terminal,early_am,04:00-06:00,38,380,37,1,mon|tue|wed|thu|fri,05:00,13:00,5,1,ready_for_opt_in_recruitment
+VAN-002,33.800,-84.400,"DeKalb County, GA|Fulton County, GA",30306|30308|30309|30314|30318|30324,Domestic Terminal,early_am,04:00-06:00,26,260,24,2,mon|tue|wed|thu|fri,04:30,12:30,3,0,promising_needs_schedule_refinement
+VAN-003,33.700,-84.500,"Fulton County, GA",30311|30331|30344,Domestic Terminal,early_am,04:00-06:00,23,230,22,1,mon|tue|wed|thu|fri,05:30,13:30,3,0,promising_needs_schedule_refinement
+VAN-004,33.600,-84.400,"Clayton County, GA",30274|30296|30297,Domestic Terminal,early_am,04:00-06:00,17,170,17,0,mon|tue|wed|thu|fri,05:30,13:30,2,0,promising_needs_schedule_refinement
+VAN-005,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Domestic Terminal,early_am,04:00-06:00,13,130,13,0,tue|wed|thu|fri|sat,05:30,13:30,2,0,promising_needs_schedule_refinement
+VAN-006,33.700,-84.100,"DeKalb County, GA",30038|30058,Domestic Terminal,early_am,04:00-06:00,13,130,13,0,mon|tue|wed|thu|fri,05:45,13:45,2,0,promising_needs_schedule_refinement
+VAN-007,33.500,-84.100,"Henry County, GA|Rockdale County, GA",30252,Domestic Terminal,early_am,04:00-06:00,11,110,11,0,thu|fri|sat|sun|mon,05:00,13:00,1,0,promising_needs_schedule_refinement
+VAN-008,33.800,-84.400,"Fulton County, GA",30305|30308|30309|30314|30324,Domestic Terminal,early_am,02:00-04:00,11,110,11,0,tue|wed|thu|fri|sat,03:30,11:30,3,0,promising_needs_schedule_refinement
+VAN-009,33.700,-84.400,"Fulton County, GA",30310|30315|30354,Domestic Terminal,early_am,04:00-06:00,12,120,10,2,mon|tue|wed|thu|fri,04:00,12:00,2,0,promising_needs_schedule_refinement
+VAN-010,33.600,-84.200,"Henry County, GA",30281,Domestic Terminal,early_am,04:00-06:00,10,100,10,0,thu|fri|sat|sun|mon,05:45,13:45,2,0,promising_needs_schedule_refinement
+VAN-011,33.800,-84.400,"DeKalb County, GA|Fulton County, GA",30306|30308|30314|30318|30324,Delta TechOps,early_am,04:00-06:00,10,100,10,0,tue|wed|thu|fri|sat,04:30,12:30,2,0,promising_needs_schedule_refinement
+VAN-012,33.400,-84.700,"Coweta County, GA",30265,Domestic Terminal,early_am,04:00-06:00,9,90,9,0,mon|tue|wed|thu|fri,04:15,12:15,2,0,exploratory
+VAN-013,33.900,-84.500,"Cobb County, GA",30080|30082|30339,Domestic Terminal,early_am,04:00-06:00,9,90,9,0,mon|tue|wed|thu|fri,04:15,12:15,2,0,exploratory
+VAN-014,33.700,-84.300,"DeKalb County, GA|Fulton County, GA",30032|30316|30317,Domestic Terminal,early_am,04:00-06:00,9,90,9,0,tue|wed|thu|fri|sat,05:00,13:00,1,0,exploratory
+VAN-015,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30337|30349,Domestic Terminal,evening,18:00-20:00,8,80,8,0,mon|tue|wed|thu|fri,18:00,02:00,2,0,exploratory
+VAN-016,33.700,-84.500,"Fulton County, GA",30311|30331,South Cargo Area,early_am,04:00-06:00,8,80,8,0,tue|wed|thu|fri|sat,05:00,13:00,1,0,exploratory
+VAN-017,33.700,-84.500,"Fulton County, GA",30311|30331|30344,Domestic Terminal,evening,18:00-20:00,8,80,8,0,thu|fri|sat|sun|mon,18:15,02:15,1,0,exploratory
+VAN-018,33.600,-84.600,"Fulton County, GA",30213,Domestic Terminal,early_am,04:00-06:00,8,80,8,0,fri|sat|sun|mon,04:00,14:00,2,0,exploratory
+VAN-019,33.700,-84.400,"Fulton County, GA",30312|30315|30354,North Cargo Area,early_am,04:00-06:00,8,80,8,0,thu|fri|sat|sun,05:30,15:30,1,0,exploratory
+VAN-020,33.800,-84.400,"DeKalb County, GA|Fulton County, GA",30306|30309|30313|30314|30324,International Terminal,early_am,04:00-06:00,8,80,8,0,mon|tue|wed|thu|fri,04:45,12:45,2,0,exploratory
+VAN-021,33.900,-84.300,"DeKalb County, GA",30319|30338|30341|30345,Domestic Terminal,early_am,04:00-06:00,8,80,8,0,fri|sat|sun|mon|tue,04:45,12:45,1,0,exploratory
+VAN-022,33.700,-84.700,"Douglas County, GA",30135,Domestic Terminal,early_am,04:00-06:00,9,90,7,2,sat|sun|mon|tue,04:45,14:45,1,0,exploratory
+VAN-023,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30349,Other Airport Area,early_am,04:00-06:00,7,70,7,0,sat|sun|mon|tue|wed,05:15,13:15,1,0,exploratory
+VAN-024,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30337|30349,Delta TechOps,early_am,04:00-06:00,7,70,7,0,fri|sat|sun|mon|tue,04:45,12:45,1,0,exploratory
+VAN-025,33.600,-84.200,"Clayton County, GA|Henry County, GA",30281,Delta TechOps,early_am,04:00-06:00,7,70,7,0,wed|thu|fri|sat|sun,05:30,13:30,1,0,exploratory
+VAN-026,33.700,-84.500,"Fulton County, GA",30311|30331|30344,Domestic Terminal,evening,16:00-18:00,7,70,7,0,wed|thu|fri|sat|sun,17:15,01:15,2,0,exploratory
+VAN-027,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Delta TechOps,early_am,04:00-06:00,7,70,7,0,wed|thu|fri|sat|sun,04:00,12:00,1,0,exploratory
+VAN-028,33.700,-84.500,"Fulton County, GA",30311|30344,Other Airport Area,early_am,04:00-06:00,7,70,7,0,mon|tue|wed|thu|fri,04:15,12:15,1,0,exploratory
+VAN-029,33.600,-84.400,"Clayton County, GA",30274|30296|30297,International Terminal,early_am,04:00-06:00,7,70,7,0,thu|fri|sat|sun|mon,05:30,13:30,1,0,exploratory
+VAN-030,33.600,-84.400,"Clayton County, GA",30274|30296|30297,Other Airport Area,early_am,04:00-06:00,7,70,7,0,fri|sat|sun|mon,05:45,15:45,2,0,exploratory
+VAN-031,33.800,-84.400,"Fulton County, GA",30303|30308|30309|30318|30324|30326,Other Airport Area,early_am,04:00-06:00,7,70,7,0,mon|tue|wed|thu|fri,05:00,13:00,1,0,exploratory
+VAN-032,33.900,-84.500,"Cobb County, GA",30060|30067|30080|30339,Delta TechOps,early_am,04:00-06:00,7,70,7,0,mon|tue|wed|thu|fri,04:15,12:15,2,0,exploratory
+VAN-033,33.400,-84.900,"Coweta County, GA",30263,Domestic Terminal,early_am,04:00-06:00,7,70,6,1,tue|wed|thu|fri|sat,05:30,13:30,1,0,exploratory
+VAN-034,33.500,-84.300,"Clayton County, GA",30236,Domestic Terminal,early_am,04:00-06:00,7,70,6,1,mon|tue|wed|thu|fri,05:30,13:30,1,0,exploratory
+VAN-035,33.400,-84.500,"Fayette County, GA",30215,Domestic Terminal,early_am,04:00-06:00,7,70,6,1,mon|tue|wed|thu|fri,04:15,12:15,2,0,exploratory
+VAN-036,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30337|30349,Domestic Terminal,early_am,02:00-04:00,6,60,6,0,fri|sat|sun|mon|tue,03:45,11:45,2,0,exploratory
+VAN-037,33.600,-84.500,"Fulton County, GA",30291|30337|30349,International Terminal,early_am,04:00-06:00,6,60,6,0,mon|tue|wed|thu|fri,05:30,13:30,2,0,exploratory
+VAN-038,33.400,-84.500,"Fayette County, GA",30215,International Terminal,early_am,04:00-06:00,6,60,6,0,fri|sat|sun|mon,04:00,14:00,1,0,exploratory
+VAN-039,33.400,-84.500,"Clayton County, GA|Fayette County, GA",30215,Domestic Terminal,evening,18:00-20:00,6,60,6,0,wed|thu|fri|sat|sun,18:30,02:30,1,0,exploratory
+VAN-040,33.600,-84.300,"Clayton County, GA|DeKalb County, GA|Henry County, GA",30273|30294,Domestic Terminal,early_am,04:00-06:00,6,60,6,0,tue|wed|thu|fri|sat,04:45,12:45,2,0,exploratory
+VAN-041,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,evening,16:00-18:00,8,80,5,3,sat|wed|sun,16:45,22:45,1,0,exploratory
+VAN-042,33.400,-84.700,"Coweta County, GA",30265,Domestic Terminal,evening,18:00-20:00,6,60,5,1,mon|tue|wed|thu|fri,18:15,02:15,2,0,exploratory
+VAN-043,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,early_am,04:00-06:00,6,60,5,1,tue|wed|thu|fri|sat,04:00,12:00,1,0,exploratory
+VAN-044,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30337|30349,South Cargo Area,early_am,04:00-06:00,5,50,5,0,fri|sat|sun|mon,05:45,15:45,2,0,exploratory
+VAN-045,33.400,-84.700,"Coweta County, GA",30265,Delta TechOps,early_am,04:00-06:00,5,50,5,0,thu|fri|sat|sun|mon,04:00,12:00,2,0,exploratory
+VAN-046,33.500,-84.200,"Henry County, GA",30253,International Terminal,early_am,04:00-06:00,5,50,5,0,fri|sat|sun|mon|tue,04:45,12:45,1,0,exploratory
+VAN-047,33.700,-84.500,"Fulton County, GA",30331|30344,Delta TechOps,early_am,04:00-06:00,5,50,5,0,mon|tue|wed|thu|fri,04:15,12:15,1,0,exploratory
+VAN-048,33.600,-84.600,"Fulton County, GA",30213,Domestic Terminal,evening,18:00-20:00,5,50,5,0,mon|tue|wed|thu|fri,18:15,02:15,2,0,exploratory
+VAN-049,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,North Cargo Area,early_am,04:00-06:00,5,50,5,0,wed|thu|fri|sat|sun,04:15,12:15,1,0,exploratory
+VAN-050,33.500,-84.500,"Fayette County, GA",30214,Domestic Terminal,early_am,04:00-06:00,5,50,5,0,mon|tue|wed|thu|fri,04:45,12:45,1,0,exploratory
+VAN-051,33.800,-84.400,"Fulton County, GA",30306|30308|30318|30324,Delta G.O.,early_am,04:00-06:00,5,50,5,0,wed|thu|fri|sat,04:00,14:00,1,0,exploratory
+VAN-052,33.800,-84.400,"DeKalb County, GA|Fulton County, GA",30306|30309|30318|30324|30326,Domestic Terminal,evening,18:00-20:00,5,50,5,0,mon|tue|wed|thu|fri,18:45,02:45,3,0,exploratory
+VAN-053,33.700,-84.200,"DeKalb County, GA",30034|30035,Domestic Terminal,evening,18:00-20:00,5,50,5,0,mon|tue|wed|thu|fri,18:15,02:15,2,0,exploratory
+VAN-054,33.700,-84.400,"Fulton County, GA",30310|30312|30315,Domestic Terminal,early_am,02:00-04:00,5,50,5,0,mon|tue|wed|thu|fri,03:45,11:45,2,0,exploratory
+VAN-055,33.900,-84.500,"Cobb County, GA",30060|30080|30082|30339,Other Airport Area,early_am,04:00-06:00,5,50,5,0,sun|mon|tue,05:45,09:45,1,0,exploratory
+VAN-056,33.400,-84.100,"Henry County, GA",30248,Domestic Terminal,early_am,04:00-06:00,5,50,5,0,tue|wed|thu|fri|sat,05:00,13:00,1,0,exploratory
+VAN-057,33.600,-84.300,"Clayton County, GA|DeKalb County, GA|Henry County, GA",30260|30273|30294,Other Airport Area,early_am,04:00-06:00,5,50,5,0,thu|fri|sat|sun|mon,05:00,13:00,1,0,exploratory
+VAN-058,33.600,-84.300,"Clayton County, GA|DeKalb County, GA|Henry County, GA",30260|30273|30294,International Terminal,early_am,04:00-06:00,5,50,5,0,tue|wed|thu|fri|sat,04:30,12:30,1,0,exploratory
+VAN-059,33.700,-84.300,"DeKalb County, GA|Fulton County, GA",30032|30316|30317,Domestic Terminal,early_am,02:00-04:00,5,50,5,0,mon|tue|wed|thu|fri,03:45,11:45,2,0,exploratory
+VAN-060,33.600,-84.300,"Clayton County, GA|DeKalb County, GA",30273|30294,Delta TechOps,early_am,04:00-06:00,5,50,5,0,tue|mon|fri|thu,04:00,10:00,1,0,exploratory
+VAN-061,33.400,-84.300,"Clayton County, GA|Henry County, GA",30228,Domestic Terminal,early_am,04:00-06:00,5,50,4,1,fri|sat|sun|mon|tue,04:30,12:30,1,0,exploratory
+VAN-062,33.900,-84.500,"Cobb County, GA",30060|30067|30082|30339,Domestic Terminal,evening,18:00-20:00,5,50,4,1,wed|thu|fri|sat|sun,18:00,02:00,2,0,exploratory
+VAN-063,34.000,-84.500,"Cobb County, GA",30066,Domestic Terminal,early_am,04:00-06:00,5,50,4,1,mon|tue|wed|thu|fri,04:00,12:00,1,0,exploratory
+VAN-064,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Domestic Terminal,evening,16:00-18:00,6,60,3,3,mon|tue|wed|thu|fri,16:45,00:45,1,0,exploratory
+VAN-065,33.500,-84.400,"Clayton County, GA",30238,Domestic Terminal,early_am,04:00-06:00,6,60,3,3,mon|tue|wed|thu|fri,05:45,13:45,2,0,exploratory
+VAN-066,33.400,-84.900,"Coweta County, GA",30263,Domestic Terminal,evening,16:00-18:00,9,90,2,7,fri|sat|sun|mon|tue,16:45,00:45,2,0,exploratory
+VAN-067,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,International Terminal,evening,16:00-18:00,6,60,2,4,sat|wed|mon|thu,16:30,21:30,1,0,exploratory
+VAN-068,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30349,Domestic Terminal,overnight,18:00-20:00,5,50,2,3,mon|tue|wed|thu|fri,19:30,03:30,2,0,exploratory
+VAN-069,33.600,-84.200,"Clayton County, GA|Henry County, GA",30281,Domestic Terminal,evening,16:00-18:00,5,50,2,3,mon|tue|wed|thu|fri,17:45,01:45,1,0,exploratory
+VAN-070,33.500,-84.300,"Clayton County, GA",30236,Domestic Terminal,evening,16:00-18:00,5,50,2,3,mon|tue|wed|thu|fri,17:45,01:45,2,0,exploratory
+VAN-071,33.600,-84.200,"Henry County, GA",30281,Domestic Terminal,overnight,20:00-22:00,8,80,1,7,tue|wed|thu|fri|sat,20:15,04:15,1,0,exploratory
+VAN-072,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,overnight,20:00-22:00,7,70,1,6,mon|tue|wed|thu|fri,21:00,05:00,1,0,exploratory
+VAN-073,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,evening,14:00-16:00,6,60,1,5,mon|tue|wed|thu,15:15,01:15,1,0,exploratory
+VAN-074,33.600,-84.200,"Clayton County, GA|Henry County, GA",30281,Domestic Terminal,overnight,22:00-00:00,6,60,1,5,tue|wed|thu|fri|sat,23:45,07:45,1,0,exploratory
+VAN-075,33.400,-84.900,"Coweta County, GA",30263,Domestic Terminal,day,08:00-10:00,14,140,0,14,wed|thu|fri|sat|sun,09:00,17:00,1,0,promising_needs_schedule_refinement
+VAN-076,33.600,-84.200,"Henry County, GA",30281,Domestic Terminal,day,08:00-10:00,10,100,0,10,tue|wed|thu|fri|sat,08:00,16:00,1,0,promising_needs_schedule_refinement
+VAN-077,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Domestic Terminal,midday,12:00-14:00,10,100,0,10,tue|wed|thu|fri|sat,13:00,21:00,1,0,promising_needs_schedule_refinement
+VAN-078,33.500,-84.400,"Clayton County, GA|Fayette County, GA",30238,Domestic Terminal,day,08:00-10:00,10,100,0,10,wed|thu|fri|sat|sun,09:45,17:45,2,0,promising_needs_schedule_refinement
+VAN-079,33.400,-84.900,"Coweta County, GA",30263,Domestic Terminal,midday,10:00-12:00,9,90,0,9,thu|fri|sat|sun|mon,10:00,18:00,1,0,exploratory
+VAN-080,33.500,-84.300,"Clayton County, GA|Henry County, GA",30236,Domestic Terminal,midday,10:00-12:00,9,90,0,9,mon|tue|wed|thu|fri,11:15,19:15,3,0,exploratory
+VAN-081,33.600,-84.200,"Clayton County, GA|Henry County, GA",30281,Domestic Terminal,midday,10:00-12:00,8,80,0,8,mon|tue|wed|thu|fri,10:15,18:15,2,0,exploratory
+VAN-082,33.400,-84.500,"Fayette County, GA",30215,Domestic Terminal,day,08:00-10:00,8,80,0,8,wed|thu|fri|sat,08:00,18:00,1,0,exploratory
+VAN-083,33.600,-84.500,"Clayton County, GA|Fulton County, GA",30291|30349,Domestic Terminal,early_am,06:00-08:00,7,70,0,7,tue|wed|thu|fri|sat,06:00,14:00,1,0,exploratory
+VAN-084,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,day,08:00-10:00,7,70,0,7,mon|tue|wed|thu|fri,09:45,17:45,1,0,exploratory
+VAN-085,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,day,06:00-08:00,7,70,0,7,fri|sat|sun|mon|tue,07:15,15:15,1,0,exploratory
+VAN-086,33.500,-84.100,"Henry County, GA",30252,Domestic Terminal,midday,10:00-12:00,7,70,0,7,fri|sat|sun|mon,10:15,20:15,1,0,exploratory
+VAN-087,33.800,-84.400,"Fulton County, GA",30303|30305|30308|30309|30318,Domestic Terminal,early_am,06:00-08:00,7,70,0,7,thu|fri|sat|sun,06:00,16:00,1,0,exploratory
+VAN-088,33.400,-84.300,"Clayton County, GA|Henry County, GA",30228,Domestic Terminal,midday,12:00-14:00,7,70,0,7,tue|wed|thu|fri|sat,13:15,21:15,1,0,exploratory
+VAN-089,33.400,-84.300,"Clayton County, GA|Henry County, GA",30228,Domestic Terminal,day,08:00-10:00,7,70,0,7,fri|sat|sun|mon|tue,09:00,17:00,2,0,exploratory
+VAN-090,33.400,-84.700,"Coweta County, GA",30265,Domestic Terminal,midday,10:00-12:00,6,60,0,6,fri|sat|sun|mon|tue,11:00,19:00,1,0,exploratory
+VAN-091,33.400,-84.700,"Coweta County, GA",30265,Domestic Terminal,early_am,06:00-08:00,6,60,0,6,mon|tue|wed|thu|fri,06:00,14:00,2,0,exploratory
+VAN-092,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,midday,10:00-12:00,6,60,0,6,mon|tue|wed|thu|fri,10:30,18:30,2,0,exploratory
+VAN-093,33.400,-84.900,"Coweta County, GA",30263,Domestic Terminal,overnight,20:00-22:00,6,60,0,6,thu|fri|sat|sun|mon,20:45,04:45,2,0,exploratory
+VAN-094,33.600,-84.600,"Fulton County, GA",30213,Domestic Terminal,day,06:00-08:00,6,60,0,6,mon|tue|wed|thu|fri,07:45,15:45,1,0,exploratory
+VAN-095,33.600,-84.600,"Fulton County, GA",30213,Domestic Terminal,day,08:00-10:00,6,60,0,6,mon|tue|wed|thu|fri,09:30,17:30,1,0,exploratory
+VAN-096,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Domestic Terminal,day,08:00-10:00,6,60,0,6,mon|tue|wed|thu|fri,09:00,17:00,2,0,exploratory
+VAN-097,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Domestic Terminal,midday,10:00-12:00,6,60,0,6,tue|wed|thu|fri|sat,11:15,19:15,1,0,exploratory
+VAN-098,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Delta G.O.,midday,12:00-14:00,6,60,0,6,tue|wed|thu|fri|sat,13:30,21:30,1,0,exploratory
+VAN-099,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Delta TechOps,midday,10:00-12:00,6,60,0,6,wed|mon,10:15,14:15,1,0,exploratory
+VAN-100,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Delta TechOps,midday,12:00-14:00,6,60,0,6,fri|sat|sun|mon|tue,12:00,20:00,1,0,exploratory
+VAN-101,33.500,-84.300,"Clayton County, GA",30236,Domestic Terminal,day,08:00-10:00,6,60,0,6,tue|wed|thu|fri|sat,08:45,16:45,1,0,exploratory
+VAN-102,33.700,-84.700,"Douglas County, GA",30135,Domestic Terminal,midday,10:00-12:00,6,60,0,6,mon|tue|wed|thu|fri,10:00,18:00,2,0,exploratory
+VAN-103,33.500,-84.500,"Fayette County, GA",30214,Domestic Terminal,day,08:00-10:00,6,60,0,6,tue|wed|thu|fri|sat,08:45,16:45,1,0,exploratory
+VAN-104,33.400,-84.700,"Coweta County, GA",30265,Domestic Terminal,midday,12:00-14:00,5,50,0,5,wed|thu|fri|sat|sun,13:00,21:00,1,0,exploratory
+VAN-105,33.400,-84.700,"Coweta County, GA",30265,International Terminal,day,08:00-10:00,5,50,0,5,thu|fri|sat|sun|mon,08:00,16:00,1,0,exploratory
+VAN-106,33.500,-84.200,"Henry County, GA",30253,Domestic Terminal,midday,12:00-14:00,5,50,0,5,wed|thu|fri|sat|sun,12:00,20:00,1,0,exploratory
+VAN-107,33.500,-84.200,"Henry County, GA",30253,International Terminal,day,08:00-10:00,5,50,0,5,mon|tue|wed|thu,09:00,19:00,1,0,exploratory
+VAN-108,33.600,-84.200,"Clayton County, GA|Henry County, GA",30281,Domestic Terminal,evening,14:00-16:00,5,50,0,5,mon|tue|wed|thu|fri,15:30,23:30,1,0,exploratory
+VAN-109,33.700,-84.500,"Fulton County, GA",30311|30331|30344,Domestic Terminal,early_am,06:00-08:00,5,50,0,5,fri|sat|sun|mon,06:15,16:15,1,0,exploratory
+VAN-110,33.600,-84.600,"Fulton County, GA",30213,Domestic Terminal,overnight,22:00-00:00,5,50,0,5,tue|wed|thu|fri|sat,23:15,07:15,1,0,exploratory
+VAN-111,33.400,-84.600,"Fayette County, GA",30269,Domestic Terminal,early_am,06:00-08:00,5,50,0,5,sat|sun|mon|tue|wed,06:15,14:15,1,0,exploratory
+VAN-112,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Other Airport Area,midday,10:00-12:00,5,50,0,5,wed|thu|fri|sat|sun,11:30,19:30,1,0,exploratory
+VAN-113,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,International Terminal,midday,10:00-12:00,5,50,0,5,mon|tue|wed|thu,10:45,20:45,1,0,exploratory
+VAN-114,33.400,-84.600,"Coweta County, GA|Fayette County, GA",30269|30277,Domestic Terminal,day,06:00-08:00,5,50,0,5,tue|wed|thu|fri|sat,07:00,15:00,2,0,exploratory
+VAN-115,33.500,-84.300,"Clayton County, GA",30236,Domestic Terminal,evening,14:00-16:00,5,50,0,5,sat|sun|mon|tue|wed,15:30,23:30,1,0,exploratory
+VAN-116,33.400,-84.500,"Clayton County, GA|Fayette County, GA",30215,Domestic Terminal,day,06:00-08:00,5,50,0,5,mon|sat,07:00,12:00,1,0,exploratory
+VAN-117,33.500,-84.400,"Clayton County, GA",30238,Domestic Terminal,midday,12:00-14:00,5,50,0,5,mon|sat|thu,13:15,17:15,1,0,exploratory
+VAN-118,33.700,-84.700,"Douglas County, GA",30135,Domestic Terminal,day,08:00-10:00,5,50,0,5,fri|sat|sun|mon|tue,09:15,17:15,1,0,exploratory
+VAN-119,33.500,-84.500,"Fayette County, GA",30214,Domestic Terminal,day,06:00-08:00,5,50,0,5,wed|thu|fri|sat|sun,06:45,14:45,1,0,exploratory
+VAN-120,33.900,-84.700,"Cobb County, GA",30127,Domestic Terminal,midday,12:00-14:00,5,50,0,5,mon|tue|wed|thu|fri,13:45,21:45,1,0,exploratory
+VAN-121,33.900,-84.000,"Gwinnett County, GA",30017|30046|30078,Domestic Terminal,day,06:00-08:00,5,50,0,5,wed|thu|fri|sat|sun,07:00,15:00,1,0,exploratory
