@@ -1,0 +1,106 @@
+{
+  "model_name": "ATL-Commute-Mode-v1",
+  "description": "Synthetic current commute-mode model for ATL-area airport employees.",
+  "important_note": "Baseline mode shares are evidence-informed by AERO/ATL airport employee commute research. Shift and destination adjustments are simulation rules used to improve transportation realism and should not be represented as measured ATL workforce statistics.",
+
+  "baseline_modes": {
+    "drive_alone": {
+      "share": 0.79
+    },
+    "carpool_vanpool": {
+      "share": 0.04
+    },
+    "marta_rail": {
+      "share": 0.04
+    },
+    "marta_bus_rail": {
+      "share": 0.03
+    },
+    "family_friend_dropoff": {
+      "share": 0.04
+    },
+    "rideshare_direct": {
+      "share": 0.03
+    },
+    "other": {
+      "share": 0.03
+    }
+  },
+
+  "transit_service_rules": {
+    "weekday_rail_service_start": "04:45",
+    "weekday_rail_service_end": "01:00",
+    "minimum_airport_arrival_buffer_minutes": 15,
+    "notes": "Synthetic feasibility rule. A worker must be able to reach the work destination before shift start with the configured buffer."
+  },
+
+  "destination_transit_access": {
+    "Domestic Terminal": {
+      "level": "direct",
+      "transit_multiplier": 1.60
+    },
+    "International Terminal": {
+      "level": "indirect",
+      "transit_multiplier": 0.85
+    },
+    "Delta TechOps": {
+      "level": "limited",
+      "transit_multiplier": 0.45
+    },
+    "Delta G.O.": {
+      "level": "limited",
+      "transit_multiplier": 0.45
+    },
+    "North Cargo Area": {
+      "level": "limited",
+      "transit_multiplier": 0.35
+    },
+    "South Cargo Area": {
+      "level": "limited",
+      "transit_multiplier": 0.30
+    },
+    "Rental Car Center": {
+      "level": "airport_connection",
+      "transit_multiplier": 1.10
+    },
+    "Other Airport Area": {
+      "level": "varies",
+      "transit_multiplier": 0.60
+    }
+  },
+
+  "shift_transit_adjustments": {
+    "early_am": {
+      "transit_multiplier": 0.20,
+      "reason": "Many early airport shifts begin before practical MARTA service can deliver an employee to work."
+    },
+    "day": {
+      "transit_multiplier": 1.20
+    },
+    "midday": {
+      "transit_multiplier": 1.15
+    },
+    "evening": {
+      "transit_multiplier": 0.90
+    },
+    "overnight": {
+      "transit_multiplier": 0.25,
+      "reason": "Late-night return trips and overnight schedules frequently extend beyond normal rail service."
+    }
+  },
+
+  "mode_groups": {
+    "transit": [
+      "marta_rail",
+      "marta_bus_rail"
+    ],
+    "private_vehicle": [
+      "drive_alone"
+    ],
+    "shared_vehicle": [
+      "carpool_vanpool",
+      "family_friend_dropoff",
+      "rideshare_direct"
+    ]
+  }
+}

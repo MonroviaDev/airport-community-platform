@@ -1,0 +1,108 @@
+{
+  "model_name": "ATL-AERO-v1",
+  "description": "Synthetic airport employee work schedule model for the Airport Community Platform.",
+  "population_basis": "ATL-area workers modeled from 2023 Census LODES Main JT00 data.",
+  "schedule_type_basis": "AERO airport employee commute research.",
+  "important_note": "Schedule-type proportions are evidence-informed. Exact shift-family distributions and start times are modeled assumptions and should not be represented as measured ATL workforce statistics.",
+
+  "schedule_types": {
+    "standard": {
+      "share": 0.75,
+      "work_days": 5,
+      "typical_shift_hours": 8
+    },
+    "compressed": {
+      "share": 0.17,
+      "work_days": 4,
+      "typical_shift_hours": 10
+    },
+    "part_time": {
+      "share": 0.08,
+      "min_work_days": 2,
+      "max_work_days": 4,
+      "min_shift_hours": 4,
+      "max_shift_hours": 6
+    }
+  },
+
+  "shift_families": {
+    "early_am": {
+      "share": 0.25,
+      "start_window": ["03:30", "06:30"]
+    },
+    "day": {
+      "share": 0.25,
+      "start_window": ["06:30", "10:00"]
+    },
+    "midday": {
+      "share": 0.20,
+      "start_window": ["10:00", "14:30"]
+    },
+    "evening": {
+      "share": 0.20,
+      "start_window": ["14:30", "19:00"]
+    },
+    "overnight": {
+      "share": 0.10,
+      "start_window": ["19:00", "23:59"]
+    }
+  },
+
+  "start_time_increment_minutes": 15,
+
+  "workday_patterns": {
+    "standard": [
+      {
+        "days": ["mon", "tue", "wed", "thu", "fri"],
+        "weight": 0.45
+      },
+      {
+        "days": ["tue", "wed", "thu", "fri", "sat"],
+        "weight": 0.15
+      },
+      {
+        "days": ["wed", "thu", "fri", "sat", "sun"],
+        "weight": 0.15
+      },
+      {
+        "days": ["thu", "fri", "sat", "sun", "mon"],
+        "weight": 0.10
+      },
+      {
+        "days": ["fri", "sat", "sun", "mon", "tue"],
+        "weight": 0.10
+      },
+      {
+        "days": ["sat", "sun", "mon", "tue", "wed"],
+        "weight": 0.05
+      }
+    ],
+
+    "compressed": [
+      {
+        "days": ["mon", "tue", "wed", "thu"],
+        "weight": 0.25
+      },
+      {
+        "days": ["tue", "wed", "thu", "fri"],
+        "weight": 0.20
+      },
+      {
+        "days": ["wed", "thu", "fri", "sat"],
+        "weight": 0.15
+      },
+      {
+        "days": ["thu", "fri", "sat", "sun"],
+        "weight": 0.15
+      },
+      {
+        "days": ["fri", "sat", "sun", "mon"],
+        "weight": 0.15
+      },
+      {
+        "days": ["sat", "sun", "mon", "tue"],
+        "weight": 0.10
+      }
+    ]
+  }
+}

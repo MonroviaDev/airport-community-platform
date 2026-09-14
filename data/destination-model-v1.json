@@ -1,0 +1,65 @@
+{
+  "model_name": "ATL-Destination-v1",
+  "description": "Synthetic airport work-destination model for the Airport Community Platform.",
+  "population_basis": "ATL-area workers modeled from 2023 Census LODES Main JT00 data.",
+  "geographic_basis": "LODES workplace-block concentrations combined with known ATL facility geography.",
+  "important_note": "LODES supports overall airport employment geography but cannot reliably distinguish individual workplaces within large central-airport census blocks. Destination shares below are modeled assumptions for transportation-network testing and should not be represented as measured ATL employee distributions.",
+
+  "destinations": {
+    "Domestic Terminal": {
+      "share": 0.42,
+      "category": "terminal",
+      "transit_access": "direct",
+      "notes": "Primary central passenger-terminal employment destination."
+    },
+
+    "International Terminal": {
+      "share": 0.12,
+      "category": "terminal",
+      "transit_access": "indirect",
+      "notes": "Distinct terminal destination with different landside transportation characteristics."
+    },
+
+    "Delta TechOps": {
+      "share": 0.12,
+      "category": "airline_support",
+      "transit_access": "limited",
+      "notes": "Major airport-area employment center treated separately because commute access differs substantially from passenger terminals."
+    },
+
+    "Delta G.O.": {
+      "share": 0.06,
+      "category": "airline_support",
+      "transit_access": "limited",
+      "notes": "Separate Delta employment destination in the airport employment area."
+    },
+
+    "North Cargo Area": {
+      "share": 0.07,
+      "category": "cargo",
+      "transit_access": "limited",
+      "notes": "North-side cargo and logistics employment cluster."
+    },
+
+    "South Cargo Area": {
+      "share": 0.07,
+      "category": "cargo",
+      "transit_access": "limited",
+      "notes": "South-side cargo and logistics employment cluster."
+    },
+
+    "Rental Car Center": {
+      "share": 0.04,
+      "category": "ground_transportation",
+      "transit_access": "airport_connection",
+      "notes": "Distinct employment destination connected to the terminal area by ATL SkyTrain."
+    },
+
+    "Other Airport Area": {
+      "share": 0.10,
+      "category": "other",
+      "transit_access": "varies",
+      "notes": "Captures Midfield Cargo, maintenance, support, government, hospitality and other airport-area workplaces not represented by a dedicated destination."
+    }
+  }
+}
