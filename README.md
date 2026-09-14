@@ -12,7 +12,7 @@ An independent community and workforce-transportation platform for airport emplo
 - `data/gco-vanpool-integration-v1.json` defines a privacy-safe referral and opt-in integration path for Georgia Commute Options vanpools.
 - `scripts/analyze-vanpool-opportunities.js` groups unresolved transit demand into privacy-safe geographic and schedule opportunity clusters for opt-in recruitment.
 
-The MARTA schedule result is a first-pass service-envelope screen, not a door-to-door itinerary. Xpress results identify geographic candidates, not confirmed airport trips; route-specific schedule and MARTA-transfer testing is the next modeling stage.
+The combined model tests both sides of the work trip, including route-specific MARTA service, Xpress park-and-ride schedules, transfers and airport final-mile allowances. It is a planning model rather than a live door-to-door trip planner.
 
 Run the analyses with:
 
@@ -27,17 +27,12 @@ The raw MARTA and Xpress GTFS folders are intentionally ignored because agencies
 
 ## Web application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Transportation module includes a model-backed **Plan My Commute** prototype at `/plan-my-commute`. It can:
 
-Currently, two official plugins are available:
+- Load representative synthetic early, day, evening and overnight employee scenarios.
+- Match a custom modeled ZIP, airport destination, shift and workday pattern.
+- Rank MARTA, Xpress + MARTA and carpool/vanpool options.
+- Display modeled inbound and return trips and explain transit schedule gaps.
+- Connect eligible ZIP/shift combinations to privacy-safe vanpool opportunity clusters.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+The planner uses synthetic records only. Live schedules, geocoded addresses and registered-member opt-ins remain future integrations.

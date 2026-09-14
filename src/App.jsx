@@ -1,6 +1,15 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import "./App.css";
+import {
+  commuteMembers,
+  demoProfiles,
+  displayDays,
+  displayTime,
+  findMember,
+  findVanpoolCluster,
+  parseTripSummary,
+} from "./lib/commutePlanner";
 
 const destinations = [
   "Domestic Terminal",
@@ -12,6 +21,14 @@ const destinations = [
   "Rental Car Center",
   "Other Airport Area",
 ];
+
+function readSessionObject(key) {
+  try {
+    return JSON.parse(sessionStorage.getItem(key) || "{}");
+  } catch {
+    return {};
+  }
+}
 
 function Header() {
   return (
@@ -159,45 +176,374 @@ function Transportation() {
       </p>
 
       <div className="transport-grid">
-        <Link className="transport-card featured" to="/find-a-ride">
+        <Link className="transport-card featured" to="/plan-my-commute">
+          <span className="transport-icon">🧭</span>
+          <span className="available">AVAILABLE NOW</span>
+          <h2>Plan My Commute</h2>
+          <p>
+            Compare MARTA, Xpress and shared transportation against your actual
+            airport schedule.
+          </p>
+          <span>Compare my options →</span>
+        </Link>
+
+        <Link className="transport-card" to="/find-a-ride">
           <span className="transport-icon">🚗</span>
           <h2>I Need a Ride</h2>
           <p>
-            See potential ride matches and other transportation options before
-            creating an account.
+            Find potential drivers whose route and airport schedule may fit
+            yours.
           </p>
-          <span>Find my options →</span>
+          <span>Find ride matches →</span>
         </Link>
 
         <Link className="transport-card" to="/offer-a-ride">
           <span className="transport-icon">🚘</span>
           <h2>I Can Give a Ride</h2>
           <p>
-            See whether airport workers may fit your existing commute before
-            creating an account.
+            See whether airport workers may fit the commute you already make.
           </p>
           <span>See potential riders →</span>
         </Link>
 
-        <div className="transport-card">
-          <span className="transport-icon">🚌</span>
-          <h2>Transit & Final Mile</h2>
-          <p>
-            Explore commuter transit, MARTA, hubs and final-mile connections.
-          </p>
-          <span>Coming next</span>
-        </div>
-
-        <div className="transport-card">
+        <Link className="transport-card" to="/plan-my-commute">
           <span className="transport-icon">🚐</span>
-          <h2>Carpool & Vanpool</h2>
+          <h2>Carpool & Vanpool Opportunities</h2>
           <p>
-            Explore recurring transportation groups based on airport schedules.
+            Discover recurring transportation demand near your home and shift.
           </p>
-          <span>Coming next</span>
-        </div>
+          <span>Check my area →</span>
+        </Link>
+      </div>
+
+      <div className="model-proof">
+        <strong>Built from 6,521 modeled airport employee commutes</strong>
+        <span>1,892 MARTA viable</span>
+        <span>154 Xpress + MARTA viable</span>
+        <span>121 vanpool opportunity clusters</span>
       </div>
     </main>
+  );
+}
+
+/* =========================================================
+   PLAN MY COMMUTE
+   ========================================================= */
+
+function PlanMyCommute() {
+  const navigate = useNavigate();
+  const [demoId, setDemoId] = useState("");
+  const selectedDemo = commuteMembers.find(
+    (member) => member.synthetic_id === demoId
+  );
+
+  function plan(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const criteria = {
+      syntheticId: demoId,
+      homeZip: form.get("homeZip"),
+      destination: form.get("destination"),
+      shiftStart: form.get("shiftStart"),
+      shiftEnd: form.get("shiftEnd"),
+      days: form.getAll("days"),
+    };
+    const member = findMember(criteria);
+
+    sessionStorage.setItem(
+      "airportCommutePlan",
+      JSON.stringify({ criteria, memberId: member?.synthetic_id || null })
+    );
+    navigate("/commute-results");
+  }
+
+  const formProfile = selectedDemo || {};
+
+  return (
+    <main className="page planner-page">
+      <div className="planner-heading">
+        <span className="eyebrow">PLAN MY COMMUTE</span>
+        <h1>Which options really work with your shift?</h1>
+        <p>
+          Compare complete round trips—not just nearby stops—using modeled
+          MARTA, Xpress and vanpool availability.
+        </p>
+      </div>
+
+      <div className="planner-layout">
+        <form className="flow-card commute-form" key={demoId} onSubmit={plan}>
+          <label className="demo-picker">
+            Try a synthetic employee scenario
+            <select value={demoId} onChange={(event) => setDemoId(event.target.value)}>
+              <option value="">Enter my own commute</option>
+              {demoProfiles.map((profile) => (
+                <option key={profile.id} value={profile.id}>
+                  {profile.label}
+                </option>
+              ))}
+            </select>
+            {demoId && (
+              <small>
+                {demoProfiles.find((profile) => profile.id === demoId)?.detail}
+              </small>
+            )}
+          </label>
+
+          <div className="planner-divider"><span>COMMUTE DETAILS</span></div>
+
+          <div className="form-row">
+            <label>
+              Home ZIP code
+              <input
+                name="homeZip"
+                inputMode="numeric"
+                pattern="[0-9]{5}"
+                defaultValue={formProfile.home_zcta || ""}
+                placeholder="Example: 30265"
+                required
+              />
+            </label>
+
+            <label>
+              Airport work area
+              <select
+                name="destination"
+                defaultValue={formProfile.airport_destination || ""}
+                required
+              >
+                <option value="" disabled>Select work area</option>
+                {destinations.map((destination) => (
+                  <option key={destination}>{destination}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="form-row">
+            <label>
+              Shift starts
+              <input
+                name="shiftStart"
+                type="time"
+                defaultValue={formProfile.shift_start_time || ""}
+                required
+              />
+            </label>
+            <label>
+              Shift ends
+              <input
+                name="shiftEnd"
+                type="time"
+                defaultValue={formProfile.shift_end_time || ""}
+                required
+              />
+            </label>
+          </div>
+
+          <fieldset>
+            <legend>Normal workdays</legend>
+            <div className="day-grid">
+              {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => (
+                <label className="day-choice" key={`${demoId}-${day}`}>
+                  <input
+                    name="days"
+                    value={day}
+                    type="checkbox"
+                    defaultChecked={formProfile.work_days?.split("|").includes(day)}
+                  />
+                  <span>{day.charAt(0).toUpperCase() + day.slice(1)}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <div className="location-privacy compact-privacy">
+            <strong>🔒 ZIP-level planning protects your privacy.</strong>
+            <p>Exact addresses are not needed for this early commute analysis.</p>
+          </div>
+
+          <button className="continue-button" type="submit">
+            Compare My Commute Options →
+          </button>
+        </form>
+
+        <aside className="planner-aside">
+          <span className="eyebrow">WHAT WE CHECK</span>
+          <h2>A ride home matters, too.</h2>
+          <div className="check-list">
+            <span><b>1</b> Service before your shift</span>
+            <span><b>2</b> Service after your shift</span>
+            <span><b>3</b> Transfers and park-and-rides</span>
+            <span><b>4</b> Nearby shared-commute demand</span>
+          </div>
+          <p>
+            This prototype uses a synthetic workforce. Results demonstrate the
+            matching logic and do not represent registered people.
+          </p>
+        </aside>
+      </div>
+    </main>
+  );
+}
+
+function CommuteResults() {
+  const navigate = useNavigate();
+  const savedPlan = readSessionObject("airportCommutePlan");
+
+  const member = commuteMembers.find(
+    (candidate) => candidate.synthetic_id === savedPlan.memberId
+  );
+
+  if (!member) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card">
+          <span className="eyebrow">PLAN MY COMMUTE</span>
+          <h1>We need another starting point.</h1>
+          <p className="flow-intro">
+            The current synthetic model does not include that ZIP code yet.
+            Try one of the demonstration scenarios to see the planner work.
+          </p>
+          <button className="continue-button" onClick={() => navigate("/plan-my-commute")}>
+            Choose a Demo Scenario →
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  const vanpool = findVanpoolCluster(member);
+  const martaInbound = parseTripSummary(member.marta_sample_inbound);
+  const martaOutbound = parseTripSummary(member.marta_sample_outbound);
+  const xpressInbound = parseTripSummary(member.xpress_marta_sample_inbound);
+  const xpressOutbound = parseTripSummary(member.xpress_marta_sample_outbound);
+  const martaComplete = member.marta_full_schedule === "true";
+  const xpressComplete = member.xpress_marta_full_schedule === "true";
+  const hasPartialTransit = member.transportation_recommendation.includes("partial");
+
+  return (
+    <main className="page commute-results-page">
+      <Link className="back-link" to="/plan-my-commute">← Change commute</Link>
+
+      <div className="commute-results-heading">
+        <div>
+          <span className="eyebrow">YOUR COMMUTE PLAN</span>
+          <h1>{member.home_zcta} to {member.airport_destination}</h1>
+          <p>
+            {displayDays(member.work_days)} · {displayTime(member.shift_start_time)}–{displayTime(member.shift_end_time)}
+          </p>
+        </div>
+        <div className={`recommendation-badge ${martaComplete || xpressComplete ? "viable" : "shared"}`}>
+          <small>BEST FIT</small>
+          <strong>
+            {martaComplete ? "MARTA" : xpressComplete ? "Xpress + MARTA" : "Shared commute"}
+          </strong>
+        </div>
+      </div>
+
+      <div className="commute-option-list">
+        <CommuteOption
+          icon="🚆"
+          title="MARTA rail"
+          status={martaComplete ? "Complete round trip" : hasPartialTransit ? "Partial schedule fit" : "Schedule gap"}
+          tone={martaComplete ? "good" : hasPartialTransit ? "partial" : "gap"}
+          summary={`${member.nearest_marta_station} · ${member.distance_to_marta_miles} miles from home ZIP center`}
+          inbound={martaInbound}
+          outbound={martaOutbound}
+          days={member.marta_round_trip_days}
+          note={!martaComplete ? "Rail service does not cover every modeled workday in both directions." : "Modeled arrival and return trips work across the full schedule."}
+        />
+
+        <CommuteOption
+          icon="🚌"
+          title="Xpress + MARTA"
+          status={xpressComplete ? "Complete round trip" : "Schedule gap"}
+          tone={xpressComplete ? "good" : "gap"}
+          summary={`${member.nearest_xpress_park_ride} · Route ${member.nearest_xpress_route_ids || "not available"} · ${member.distance_to_xpress_miles} miles`}
+          inbound={xpressInbound}
+          outbound={xpressOutbound}
+          days={member.xpress_marta_round_trip_days}
+          note={!xpressComplete ? "The commuter route or return schedule does not cover this full shift pattern." : "The park-and-ride connection completes both sides of the commute."}
+        />
+
+        <CommuteOption
+          icon="🚐"
+          title="Carpool / vanpool"
+          status={vanpool ? "Demand found nearby" : "Interest can be collected"}
+          tone={vanpool ? "shared" : "partial"}
+          summary={vanpool ? `${vanpool.home_zctas.replaceAll("|", ", ")} · ${vanpool.start_window} start window` : `${member.home_county} · ${member.shift_family.replace("_", " ")} shift`}
+          note={vanpool ? `${vanpool.synthetic_candidate_members} synthetic candidates model this corridor; the largest exact schedule subgroup has ${vanpool.largest_exact_schedule_subgroup} members.` : "No five-person cluster is modeled yet, but an interest list can reveal real demand."}
+          action="I'm Interested"
+          actionLink="/register"
+        />
+      </div>
+
+      {(!martaComplete && !xpressComplete) && (
+        <div className="gap-explanation">
+          <div className="gap-icon">!</div>
+          <div>
+            <span className="eyebrow">WHY TRANSIT ISN'T THE TOP RESULT</span>
+            <h2>The schedule leaves part of this commute uncovered.</h2>
+            <p>
+              Nearby transit alone is not enough: the model requires a workable
+              trip before the shift and a workable trip home afterward. Shared
+              transportation is prioritized when either side fails.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="prototype-note">
+        <strong>Synthetic demonstration:</strong> This result represents modeled
+        employee {member.synthetic_id}, not a registered individual. Live trip
+        planning and member opt-in will be connected in a later phase.
+      </div>
+    </main>
+  );
+}
+
+function CommuteOption({ icon, title, status, tone, summary, inbound, outbound, days, note, action, actionLink }) {
+  return (
+    <section className={`commute-option ${tone}`}>
+      <div className="commute-option-icon">{icon}</div>
+      <div className="commute-option-main">
+        <div className="commute-option-title">
+          <div>
+            <h2>{title}</h2>
+            <p>{summary}</p>
+          </div>
+          <span className={`option-status ${tone}`}>{status}</span>
+        </div>
+
+        {(inbound || outbound) && (
+          <div className="trip-pair">
+            <TripLeg label="TO WORK" trip={inbound} />
+            <TripLeg label="RIDE HOME" trip={outbound} />
+          </div>
+        )}
+
+        <div className="commute-option-footer">
+          <span>{days && Number(days) > 0 ? `✓ ${days} modeled round-trip day${days === "1" ? "" : "s"}` : note}</span>
+          {action && <Link className="interest-button" to={actionLink}>{action} →</Link>}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TripLeg({ label, trip }) {
+  return (
+    <div className={!trip ? "trip-leg unavailable" : "trip-leg"}>
+      <small>{label}</small>
+      {trip ? (
+        <>
+          <strong>{trip.timing}</strong>
+          <span>{trip.modes}</span>
+        </>
+      ) : (
+        <strong>No complete trip</strong>
+      )}
+    </div>
   );
 }
 
@@ -351,16 +697,7 @@ function FindRide() {
 
 function TransportationPreview() {
   const navigate = useNavigate();
-
-  let search = {};
-
-  try {
-    search = JSON.parse(
-      sessionStorage.getItem("airportCommunitySearch") || "{}"
-    );
-  } catch {
-    search = {};
-  }
+  const search = readSessionObject("airportCommunitySearch");
 
   const directionLabel =
     search.direction === "home"
@@ -1305,16 +1642,7 @@ function OfferRide() {
 
 function RiderPreview() {
   const navigate = useNavigate();
-
-  let offer = {};
-
-  try {
-    offer = JSON.parse(
-      sessionStorage.getItem("airportCommunityRideOffer") || "{}"
-    );
-  } catch {
-    offer = {};
-  }
+  const offer = readSessionObject("airportCommunityRideOffer");
 
   const directionLabel =
     offer.direction === "home"
@@ -2186,6 +2514,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/transportation" element={<Transportation />} />
+        <Route path="/plan-my-commute" element={<PlanMyCommute />} />
+        <Route path="/commute-results" element={<CommuteResults />} />
 
         {/* Rider flow */}
         <Route path="/find-a-ride" element={<FindRide />} />
