@@ -2332,3 +2332,42 @@ legend {
     flex-direction: column;
   }
 }
+
+
+/* SAMPLE COMMUTE — KEPT OUT OF THE PRIMARY EMPLOYEE FLOW */
+
+.sample-commute {
+  margin-top: 18px;
+  padding-top: 16px;
+  text-align: center;
+  border-top: 1px solid #e4e9f0;
+}
+
+.sample-toggle {
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  color: #607086;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.sample-toggle:hover {
+  color: #1473e6;
+}
+
+.sample-commute .demo-picker {
+  display: block;
+  margin: 12px 0 0 !important;
+  padding: 14px;
+  text-align: left;
+  border-color: #e0e6ee;
+  background: #f8fafc;
+}
+
+.sample-commute .demo-picker select {
+  margin-top: 7px;
+}
