@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "analyze:marta-schedule": "node scripts/analyze-marta-schedule-viability.js",
+    "analyze:xpress-access": "node scripts/analyze-xpress-accessibility.js"
   },
   "dependencies": {
     "react": "^19.2.8",

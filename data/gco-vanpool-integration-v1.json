@@ -1,0 +1,47 @@
+{
+  "model_name": "ATL-GCO-Vanpool-Integration-v1",
+  "purpose": "Connect airport workers to vanpool opportunities without copying or exposing private GCO member data.",
+  "public_sources": [
+    "https://gacommuteoptions.com/commuters/ways-to-get-around/vanpool/",
+    "https://xpressga.com/vanpool/"
+  ],
+  "public_program_facts": {
+    "regional_vanpools": "175+",
+    "regional_riders": "900+",
+    "operator_partner": "Commute with Enterprise",
+    "xpress_program_subsidy_share": 0.40,
+    "source_checked": "2026-09-14"
+  },
+  "approved_initial_integration": {
+    "method": "referral_and_opt_in_matching",
+    "gco_vanpool_url": "https://gacommuteoptions.com/commuters/ways-to-get-around/vanpool/",
+    "platform_behavior": [
+      "Show vanpool as a recommended mode for long-distance and off-hour commute gaps.",
+      "Match only Airport Employee Community Platform members who explicitly opt in.",
+      "Send interested members to GCO or Commute with Enterprise to join or formally create a vanpool.",
+      "Store no GCO credentials and import no GCO member profiles without a written data-sharing agreement."
+    ]
+  },
+  "prohibited_initial_integration": [
+    "Scraping authenticated MyGCO member or match data",
+    "Publishing names, home addresses, schedules, or existing vanpool rosters",
+    "Representing synthetic matches as active GCO vanpools"
+  ],
+  "future_partnership_path": [
+    "Request an employer or airport-worksite partnership with Georgia Commute Options.",
+    "Ask whether a documented referral, aggregate match, or approved API/data export is available.",
+    "Use consent-based account linking only if GCO provides a supported authorization method."
+  ],
+  "internal_match_fields": [
+    "member_id",
+    "home_area",
+    "airport_destination",
+    "work_days",
+    "shift_start_time",
+    "shift_end_time",
+    "driver_rider_preference",
+    "maximum_pickup_radius_miles",
+    "accessibility_needs",
+    "opt_in_timestamp"
+  ]
+}

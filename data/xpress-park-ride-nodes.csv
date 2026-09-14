@@ -1,0 +1,22 @@
+node_code,stop_id,stop_code,node_name,latitude,longitude,route_ids,route_names
+XPRESS-400004,198,400004,Cumming Park and Ride,34.181736,-84.142303,401,Cumming - Perimeter
+XPRESS-400005,199,400005,Dacula Park and Ride (Hebron Church),33.998767,-83.907051,416,Dacula/Indian Trail - Downtown
+XPRESS-400006,200,400006,Douglas MMTC Park and Ride,33.743237,-84.726142,463,W Douglas/Douglas MMTC - DT/MT
+XPRESS-400008,202,400008,Hamilton Mill Park and Ride,34.0752,-83.921589,413|414,Hamilton Mill/Sugarloaf - DT|Hamilton Mill/Sugarloaf-Midtown
+XPRESS-400010,204,400010,Hewatt Rd Park and Ride,33.839357,-84.059862,419,Snellville/Hewatt - DT/MT
+XPRESS-400011,205,400011,Hiram Park and Ride,33.885265,-84.739201,476,Hiram/Powder Springs - DT/MT
+XPRESS-400012,206,400012,Jonesboro Park and Ride,33.524296,-84.362082,441,Jonesboro - Downtown/Midtown
+XPRESS-400014,208,400014,McDonough Park and Ride,33.416873,-84.181227,430,McDonough/Stockbridge - DT/MT
+XPRESS-400015,209,400015,Newnan Park and Ride,33.403708,-84.723119,453,Newnan - Lakewood Station
+XPRESS-400016,210,400016,Panola Rd Park and Ride,33.702199,-84.173405,426,West Conyers/Panola - DT/MT
+XPRESS-400017,211,400017,Powder Springs Park and Ride,33.867512,-84.701564,476,Hiram/Powder Springs - DT/MT
+XPRESS-400019,213,400019,Snellville Park and Ride,33.854053,-84.014637,419,Snellville/Hewatt - DT/MT
+XPRESS-400020,214,400020,Stockbridge Park and Ride,33.548174,-84.278993,430,McDonough/Stockbridge - DT/MT
+XPRESS-400023,217,400023,Town Center/Big Shanty Park and Ride,34.026778,-84.571143,484,Hickory Grove/Town Center  - MT
+XPRESS-400025,219,400025,West Conyers Park and Ride (DT),33.685268,-84.059012,426,West Conyers/Panola - DT/MT
+XPRESS-400028,220,400028,West Douglas Park and Ride,33.723283,-84.773527,463,W Douglas/Douglas MMTC - DT/MT
+XPRESS-60013,332,60013,Sugarloaf Mills GCT Park and Ride,33.983528,-84.084139,411|412|413|414|415,Buford/Sugarloaf Mills - DT|Buford/Sugarloaf Mills - Midtown|Hamilton Mill/Sugarloaf - DT|Hamilton Mill/Sugarloaf-Midtown|Sugarloaf/Indian Trail - Emory
+XPRESS-400030,369,400030,Hickory Grove Park and Ride,34.066032,-84.611894,484,Hickory Grove/Town Center  - MT
+XPRESS-400031,416,400031,Xpress Sugarloaf Mills P&R,33.978183,-84.084377,411|412|413|414|415,Buford/Sugarloaf Mills - DT|Buford/Sugarloaf Mills - Midtown|Hamilton Mill/Sugarloaf - DT|Hamilton Mill/Sugarloaf-Midtown|Sugarloaf/Indian Trail - Emory
+XPRESS-420032,420,420032,Indian Trail Park and Ride,33.929782,-84.175345,415|416,Sugarloaf/Indian Trail - Emory|Dacula/Indian Trail - Downtown
+XPRESS-400033,434,400033,I-985 at GA 20 (Buford) Park and Ride,34.085138,-83.995209,411|412,Buford/Sugarloaf Mills - DT|Buford/Sugarloaf Mills - Midtown

@@ -1,0 +1,29 @@
+{
+  "model_name": "ATL-MARTA-Viability-v1",
+  "description": "First-pass screen of MARTA rail usefulness for synthetic ATL airport workers.",
+  "service_week_start": "2026-09-14",
+  "gtfs_source": "https://itsmarta.com/google_transit_feed/google_transit.zip",
+  "gtfs_effective_date": "2026-08-22",
+  "station_access_threshold_miles": 10,
+  "maximum_early_arrival_minutes": 60,
+  "maximum_post_shift_wait_minutes": 60,
+  "important_note": "This is a service-envelope screen, not a door-to-door itinerary. It tests proximity to the nearest rail station and scheduled Airport Station arrivals/departures. A later routing pass will test station-specific travel and transfers.",
+  "destination_transfer_minutes": {
+    "Domestic Terminal": 15,
+    "International Terminal": 35,
+    "Delta TechOps": 30,
+    "Delta G.O.": 35,
+    "North Cargo Area": 40,
+    "South Cargo Area": 40,
+    "Rental Car Center": 25,
+    "Other Airport Area": 35
+  },
+  "destinations_requiring_final_mile_validation": [
+    "International Terminal",
+    "Delta TechOps",
+    "Delta G.O.",
+    "North Cargo Area",
+    "South Cargo Area",
+    "Other Airport Area"
+  ]
+}

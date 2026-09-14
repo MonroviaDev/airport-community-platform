@@ -1,0 +1,9 @@
+{
+  "model_name": "ATL-Xpress-Accessibility-v1",
+  "xpress_park_and_ride_nodes": 21,
+  "synthetic_members_within_5_miles": 1919,
+  "synthetic_members_within_10_miles": 4021,
+  "synthetic_members_within_15_miles": 5878,
+  "members_outside_marta_10_but_within_xpress_10": 2482,
+  "important_note": "Xpress routes are weekday commuter services and do not directly serve ATL Airport. These are access candidates for an Xpress-to-MARTA transfer, not confirmed viable itineraries."
+}

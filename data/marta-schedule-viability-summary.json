@@ -1,0 +1,37 @@
+{
+  "model_name": "ATL-MARTA-Viability-v1",
+  "synthetic_members": 6521,
+  "station_access_within_10_miles": 3019,
+  "full_schedule_support": 4706,
+  "partial_schedule_support": 633,
+  "no_schedule_support": 1182,
+  "full_marta_candidates_within_10_miles": 2185,
+  "candidates_requiring_final_mile_validation": 1158,
+  "by_shift_family": {
+    "early_am": {
+      "members": 1683,
+      "full_schedule_support": 484,
+      "full_candidates_within_10_miles": 227
+    },
+    "evening": {
+      "members": 1276,
+      "full_schedule_support": 828,
+      "full_candidates_within_10_miles": 372
+    },
+    "overnight": {
+      "members": 640,
+      "full_schedule_support": 477,
+      "full_candidates_within_10_miles": 224
+    },
+    "midday": {
+      "members": 1302,
+      "full_schedule_support": 1302,
+      "full_candidates_within_10_miles": 589
+    },
+    "day": {
+      "members": 1620,
+      "full_schedule_support": 1615,
+      "full_candidates_within_10_miles": 773
+    }
+  }
+}
