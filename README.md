@@ -34,5 +34,6 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Rank MARTA, Xpress + MARTA and carpool/vanpool options.
 - Display modeled inbound and return trips and explain transit schedule gaps.
 - Connect eligible ZIP/shift combinations to privacy-safe vanpool opportunity clusters.
+- Carry commute details into a shared-transportation interest flow for riders and potential drivers.
 
-The planner uses synthetic records only. Live schedules, geocoded addresses and registered-member opt-ins remain future integrations.
+The planner uses synthetic records only. Prototype interest responses are stored locally in the browser without names, contact details or exact addresses. Live schedules, geocoded addresses, secure accounts and persistent member opt-ins remain future integrations.
