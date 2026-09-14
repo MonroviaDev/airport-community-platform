@@ -30,6 +30,15 @@ function readSessionObject(key) {
   }
 }
 
+function readLocalArray(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
 function Header() {
   return (
     <header>
@@ -489,7 +498,7 @@ function CommuteResults() {
           summary={vanpool ? `${vanpool.home_zctas.replaceAll("|", ", ")} · ${vanpool.start_window} start window` : `${member.home_county} · ${member.shift_family.replace("_", " ")} shift`}
           note={vanpool ? "This corridor shows strong potential for shared transportation. Actual availability depends on employee interest." : "No shared-ride group is available yet, but joining the interest list can help build one."}
           action="I'm Interested"
-          actionLink="/register"
+          actionLink="/transportation-interest"
         />
       </div>
 
@@ -561,6 +570,294 @@ function TripLeg({ label, trip }) {
         <strong>No complete trip</strong>
       )}
     </div>
+  );
+}
+
+function TransportationInterest() {
+  const navigate = useNavigate();
+  const savedPlan = readSessionObject("airportCommutePlan");
+  const member = commuteMembers.find(
+    (candidate) => candidate.synthetic_id === savedPlan.memberId
+  );
+
+  if (!member) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card">
+          <span className="eyebrow">SHARED TRANSPORTATION</span>
+          <h1>Start with your commute.</h1>
+          <p className="flow-intro">
+            Plan your commute first so we can carry your ZIP code, work area,
+            shift and workdays into the interest form.
+          </p>
+          <button
+            className="continue-button"
+            onClick={() => navigate("/plan-my-commute")}
+          >
+            Plan My Commute →
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  function saveInterest(event) {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const interest = {
+      id: `interest-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      memberId: member.synthetic_id,
+      homeZip: member.home_zcta,
+      airportDestination: member.airport_destination,
+      shiftStart: member.shift_start_time,
+      shiftEnd: member.shift_end_time,
+      workDays: member.work_days,
+      rideRole: form.get("rideRole"),
+      sharedMode: form.get("sharedMode"),
+      frequency: form.get("frequency"),
+      notificationPreference: form.get("notificationPreference"),
+    };
+
+    const interests = readLocalArray("airportTransportationInterests");
+    localStorage.setItem(
+      "airportTransportationInterests",
+      JSON.stringify([...interests, interest])
+    );
+    sessionStorage.setItem(
+      "latestTransportationInterest",
+      JSON.stringify(interest)
+    );
+    navigate("/interest-confirmed");
+  }
+
+  return (
+    <main className="page interest-page">
+      <Link className="back-link" to="/commute-results">
+        ← Back to commute options
+      </Link>
+
+      <div className="interest-layout">
+        <form className="flow-card interest-form" onSubmit={saveInterest}>
+          <span className="eyebrow">SHARED TRANSPORTATION INTEREST</span>
+          <h1>How could a shared ride help?</h1>
+          <p className="flow-intro">
+            Tell us what would work for you. This does not commit you to a ride
+            or share your exact address.
+          </p>
+
+          <fieldset>
+            <legend>Which best describes you?</legend>
+            <div className="interest-choice-grid three-up">
+              <InterestChoice
+                name="rideRole"
+                value="rider"
+                icon="🙋"
+                title="I need a ride"
+                text="Match me with drivers or a vanpool."
+              />
+              <InterestChoice
+                name="rideRole"
+                value="driver"
+                icon="🚘"
+                title="I can drive"
+                text="I may have room for coworkers."
+              />
+              <InterestChoice
+                name="rideRole"
+                value="either"
+                icon="↔️"
+                title="Either works"
+                text="Show me the best shared option."
+              />
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>What are you interested in?</legend>
+            <div className="interest-choice-grid">
+              <InterestChoice
+                name="sharedMode"
+                value="carpool"
+                icon="🚗"
+                title="Carpool"
+                text="A small group sharing regular rides."
+              />
+              <InterestChoice
+                name="sharedMode"
+                value="vanpool"
+                icon="🚐"
+                title="Vanpool"
+                text="A larger recurring group and vehicle."
+              />
+              <InterestChoice
+                name="sharedMode"
+                value="either"
+                icon="✨"
+                title="Either option"
+                text="Use whichever group forms first."
+              />
+            </div>
+          </fieldset>
+
+          <div className="form-row">
+            <label>
+              How often would you use it?
+              <select name="frequency" defaultValue="regular" required>
+                <option value="regular">Most scheduled workdays</option>
+                <option value="some-days">Some workdays</option>
+                <option value="backup">Only as a backup ride</option>
+              </select>
+            </label>
+
+            <label>
+              Preferred notification
+              <select
+                name="notificationPreference"
+                defaultValue="in-app"
+                required
+              >
+                <option value="in-app">In-app notification</option>
+                <option value="email">Email after account setup</option>
+                <option value="text">Text after account setup</option>
+              </select>
+            </label>
+          </div>
+
+          <label className="interest-consent">
+            <input type="checkbox" required />
+            <span>
+              I understand this records my interest only. It is not a confirmed
+              ride, reservation or commitment to drive.
+            </span>
+          </label>
+
+          <div className="prototype-storage-note">
+            <strong>Prototype privacy:</strong> No email, phone number or exact
+            address is collected. This demonstration saves the response only
+            on this device until secure accounts are connected.
+          </div>
+
+          <button className="continue-button" type="submit">
+            Join the Interest List →
+          </button>
+        </form>
+
+        <aside className="interest-summary-card">
+          <span className="eyebrow">YOUR COMMUTE</span>
+          <h2>{member.home_zcta} to the airport</h2>
+          <dl>
+            <div>
+              <dt>Work area</dt>
+              <dd>{member.airport_destination}</dd>
+            </div>
+            <div>
+              <dt>Shift</dt>
+              <dd>
+                {displayTime(member.shift_start_time)}–
+                {displayTime(member.shift_end_time)}
+              </dd>
+            </div>
+            <div>
+              <dt>Workdays</dt>
+              <dd>{displayDays(member.work_days)}</dd>
+            </div>
+          </dl>
+          <Link to="/plan-my-commute">Change commute details</Link>
+        </aside>
+      </div>
+    </main>
+  );
+}
+
+function InterestChoice({ name, value, icon, title, text }) {
+  return (
+    <label className="interest-choice">
+      <input type="radio" name={name} value={value} required />
+      <span className="interest-choice-content">
+        <b className="interest-choice-icon">{icon}</b>
+        <strong>{title}</strong>
+        <small>{text}</small>
+      </span>
+    </label>
+  );
+}
+
+function InterestConfirmed() {
+  const interest = readSessionObject("latestTransportationInterest");
+
+  if (!interest.homeZip) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card">
+          <span className="eyebrow">TRANSPORTATION INTEREST</span>
+          <h1>No recent response found.</h1>
+          <Link className="primary-button" to="/plan-my-commute">
+            Plan My Commute
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const roleLabels = {
+    rider: "Looking for a ride",
+    driver: "May be able to drive",
+    either: "Open to driving or riding",
+  };
+  const modeLabels = {
+    carpool: "Carpool",
+    vanpool: "Vanpool",
+    either: "Carpool or vanpool",
+  };
+
+  return (
+    <main className="page flow-page interest-success-page">
+      <div className="success-card interest-success-card">
+        <div className="success-icon">✓</div>
+        <span className="eyebrow">INTEREST SAVED</span>
+        <h1>You're helping a shared commute take shape.</h1>
+        <p>
+          Your prototype response is saved on this device. No driver has been
+          contacted and no ride has been scheduled.
+        </p>
+
+        <div className="interest-confirmation-summary">
+          <div>
+            <small>COMMUTE</small>
+            <strong>
+              {interest.homeZip} → {interest.airportDestination}
+            </strong>
+          </div>
+          <div>
+            <small>ROLE</small>
+            <strong>{roleLabels[interest.rideRole]}</strong>
+          </div>
+          <div>
+            <small>INTEREST</small>
+            <strong>{modeLabels[interest.sharedMode]}</strong>
+          </div>
+        </div>
+
+        <div className="next-step-box">
+          <strong>What happens later?</strong>
+          <p>
+            After secure accounts are connected, compatible employees can be
+            notified when enough people express interest in the same corridor
+            and shift.
+          </p>
+        </div>
+
+        <div className="success-actions">
+          <Link className="primary-button" to="/transportation">
+            Transportation Home
+          </Link>
+          <Link className="secondary-button" to="/commute-results">
+            View My Options
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
 
@@ -2533,6 +2830,11 @@ function App() {
         <Route path="/transportation" element={<Transportation />} />
         <Route path="/plan-my-commute" element={<PlanMyCommute />} />
         <Route path="/commute-results" element={<CommuteResults />} />
+        <Route
+          path="/transportation-interest"
+          element={<TransportationInterest />}
+        />
+        <Route path="/interest-confirmed" element={<InterestConfirmed />} />
 
         {/* Rider flow */}
         <Route path="/find-a-ride" element={<FindRide />} />
