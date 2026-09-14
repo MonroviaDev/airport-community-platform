@@ -233,6 +233,7 @@ function Transportation() {
 function PlanMyCommute() {
   const navigate = useNavigate();
   const [demoId, setDemoId] = useState("");
+  const [showSamples, setShowSamples] = useState(false);
   const selectedDemo = commuteMembers.find(
     (member) => member.synthetic_id === demoId
   );
@@ -272,25 +273,6 @@ function PlanMyCommute() {
 
       <div className="planner-layout">
         <form className="flow-card commute-form" key={demoId} onSubmit={plan}>
-          <label className="demo-picker">
-            Try a synthetic employee scenario
-            <select value={demoId} onChange={(event) => setDemoId(event.target.value)}>
-              <option value="">Enter my own commute</option>
-              {demoProfiles.map((profile) => (
-                <option key={profile.id} value={profile.id}>
-                  {profile.label}
-                </option>
-              ))}
-            </select>
-            {demoId && (
-              <small>
-                {demoProfiles.find((profile) => profile.id === demoId)?.detail}
-              </small>
-            )}
-          </label>
-
-          <div className="planner-divider"><span>COMMUTE DETAILS</span></div>
-
           <div className="form-row">
             <label>
               Home ZIP code
@@ -365,6 +347,39 @@ function PlanMyCommute() {
           <button className="continue-button" type="submit">
             Compare My Commute Options →
           </button>
+
+          <div className="sample-commute">
+            <button
+              type="button"
+              className="sample-toggle"
+              onClick={() => setShowSamples((visible) => !visible)}
+              aria-expanded={showSamples}
+            >
+              {showSamples ? "Hide sample commutes" : "Preview a sample commute"}
+            </button>
+
+            {showSamples && (
+              <label className="demo-picker">
+                Choose an example
+                <select
+                  value={demoId}
+                  onChange={(event) => setDemoId(event.target.value)}
+                >
+                  <option value="">Select a sample commute</option>
+                  {demoProfiles.map((profile) => (
+                    <option key={profile.id} value={profile.id}>
+                      {profile.label}
+                    </option>
+                  ))}
+                </select>
+                {demoId && (
+                  <small>
+                    {demoProfiles.find((profile) => profile.id === demoId)?.detail}
+                  </small>
+                )}
+              </label>
+            )}
+          </div>
         </form>
 
         <aside className="planner-aside">
@@ -377,8 +392,8 @@ function PlanMyCommute() {
             <span><b>4</b> Nearby shared-commute demand</span>
           </div>
           <p>
-            This prototype uses a synthetic workforce. Results demonstrate the
-            matching logic and do not represent registered people.
+            Planning results are estimates based on commute patterns. Actual
+            service and shared-ride availability may change.
           </p>
         </aside>
       </div>
@@ -401,11 +416,11 @@ function CommuteResults() {
           <span className="eyebrow">PLAN MY COMMUTE</span>
           <h1>We need another starting point.</h1>
           <p className="flow-intro">
-            The current synthetic model does not include that ZIP code yet.
-            Try one of the demonstration scenarios to see the planner work.
+            We don't have enough planning coverage for that ZIP code yet.
+            Return to the form and try a nearby ZIP code.
           </p>
           <button className="continue-button" onClick={() => navigate("/plan-my-commute")}>
-            Choose a Demo Scenario →
+            Return to Commute Details →
           </button>
         </div>
       </main>
@@ -472,7 +487,7 @@ function CommuteResults() {
           status={vanpool ? "Demand found nearby" : "Interest can be collected"}
           tone={vanpool ? "shared" : "partial"}
           summary={vanpool ? `${vanpool.home_zctas.replaceAll("|", ", ")} · ${vanpool.start_window} start window` : `${member.home_county} · ${member.shift_family.replace("_", " ")} shift`}
-          note={vanpool ? `${vanpool.synthetic_candidate_members} synthetic candidates model this corridor; the largest exact schedule subgroup has ${vanpool.largest_exact_schedule_subgroup} members.` : "No five-person cluster is modeled yet, but an interest list can reveal real demand."}
+          note={vanpool ? "This corridor shows strong potential for shared transportation. Actual availability depends on employee interest." : "No shared-ride group is available yet, but joining the interest list can help build one."}
           action="I'm Interested"
           actionLink="/register"
         />
@@ -494,9 +509,11 @@ function CommuteResults() {
       )}
 
       <div className="prototype-note">
-        <strong>Synthetic demonstration:</strong> This result represents modeled
-        employee {member.synthetic_id}, not a registered individual. Live trip
-        planning and member opt-in will be connected in a later phase.
+        <strong>
+          {savedPlan.criteria?.syntheticId ? "Sample commute: " : "Planning estimate: "}
+        </strong>
+        Results use modeled commute patterns, not live reservations or registered
+        employee availability.
       </div>
     </main>
   );
