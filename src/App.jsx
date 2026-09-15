@@ -12,7 +12,11 @@ import {
 } from "./lib/commutePlanner";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { loadMyMemberProfile, saveMyMemberProfile } from "./lib/memberProfiles";
-import { saveTransportationInterest } from "./lib/transportationInterests";
+import {
+  closeMyTransportationInterest,
+  loadMyTransportationInterest,
+  saveTransportationInterest,
+} from "./lib/transportationInterests";
 
 const destinations = [
   "Domestic Terminal",
@@ -973,6 +977,189 @@ function InterestConfirmed() {
   );
 }
 
+function MyTransportationInterest({ session, authReady }) {
+  const [interest, setInterest] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [closing, setClosing] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    if (!session) {
+      return () => {
+        active = false;
+      };
+    }
+
+    loadMyTransportationInterest()
+      .then((savedInterest) => {
+        if (active) setInterest(savedInterest);
+      })
+      .catch((loadError) => {
+        if (active) setError(loadError.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [session]);
+
+  async function closeInterest() {
+    setClosing(true);
+    setError("");
+
+    try {
+      const updatedInterest = await closeMyTransportationInterest();
+      setInterest(updatedInterest);
+      setClosing(false);
+    } catch (closeError) {
+      setError(closeError.message);
+      setClosing(false);
+    }
+  }
+
+  if (!authReady || (session && loading)) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card" aria-live="polite">
+          <span className="eyebrow">TRANSPORTATION INTEREST</span>
+          <h1>Loading your saved interest…</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">TRANSPORTATION INTEREST</span>
+          <h1>Sign in to manage your interest.</h1>
+          <Link className="primary-button" to="/register">
+            Sign In
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (!interest) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">MY TRANSPORTATION INTEREST</span>
+          <h1>{error ? "We couldn’t load your interest." : "No saved interest yet."}</h1>
+          {error ? (
+            <div className="auth-message error" role="alert">
+              {error}
+            </div>
+          ) : (
+            <>
+              <p className="flow-intro">
+                Plan your real commute to explore transit and shared-ride options.
+              </p>
+              <Link className="primary-button" to="/plan-my-commute">
+                Plan My Commute
+              </Link>
+            </>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  const roleLabels = {
+    rider: "Looking for a ride",
+    driver: "May be able to drive",
+    either: "Open to driving or riding",
+  };
+  const modeLabels = {
+    carpool: "Carpool",
+    vanpool: "Vanpool",
+    either: "Carpool or vanpool",
+  };
+  const frequencyLabels = {
+    regular: "Most scheduled workdays",
+    "some-days": "Some workdays",
+    backup: "Backup ride only",
+  };
+
+  return (
+    <main className="page flow-page">
+      <div className="flow-card wide-flow saved-interest-card">
+        <div className="saved-interest-heading">
+          <div>
+            <span className="eyebrow">MY TRANSPORTATION INTEREST</span>
+            <h1>Your shared-commute request</h1>
+          </div>
+          <span className={`interest-status ${interest.status}`}>
+            {interest.status}
+          </span>
+        </div>
+
+        <dl className="saved-interest-details">
+          <div>
+            <dt>Commute</dt>
+            <dd>{interest.home_zip} → {interest.airport_destination}</dd>
+          </div>
+          <div>
+            <dt>Shift</dt>
+            <dd>{displayTime(interest.shift_start)}–{displayTime(interest.shift_end)}</dd>
+          </div>
+          <div>
+            <dt>Workdays</dt>
+            <dd>{displayDays(interest.work_days)}</dd>
+          </div>
+          <div>
+            <dt>Role</dt>
+            <dd>{roleLabels[interest.ride_role]}</dd>
+          </div>
+          <div>
+            <dt>Shared option</dt>
+            <dd>{modeLabels[interest.shared_mode]}</dd>
+          </div>
+          <div>
+            <dt>Frequency</dt>
+            <dd>{frequencyLabels[interest.frequency]}</dd>
+          </div>
+        </dl>
+
+        <div className="prototype-storage-note">
+          <strong>Private by default:</strong> This page is available only to
+          your signed-in account. Closing an interest removes it from future
+          active matching without deleting your account.
+        </div>
+
+        {error && (
+          <div className="auth-message error" role="alert">
+            {error}
+          </div>
+        )}
+
+        <div className="saved-interest-actions">
+          <Link className="secondary-button" to="/plan-my-commute">
+            Update with a New Commute
+          </Link>
+          {interest.status !== "closed" && (
+            <button
+              className="close-interest-button"
+              type="button"
+              onClick={closeInterest}
+              disabled={closing}
+            >
+              {closing ? "Closing…" : "Close My Interest"}
+            </button>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
 /* =========================================================
    RIDER FLOW
    ========================================================= */
@@ -1431,6 +1618,12 @@ function Account({ session, authReady, onSignOut }) {
         </p>
         <Link className="primary-button account-profile-link" to="/profile">
           View or Edit My Profile
+        </Link>
+        <Link
+          className="secondary-button account-interest-link"
+          to="/my-transportation-interest"
+        >
+          Manage Transportation Interest
         </Link>
         <button className="secondary-button auth-signout" onClick={onSignOut}>
           Sign Out
@@ -3244,6 +3437,15 @@ function App() {
           }
         />
         <Route path="/interest-confirmed" element={<InterestConfirmed />} />
+        <Route
+          path="/my-transportation-interest"
+          element={
+            <MyTransportationInterest
+              session={session}
+              authReady={authReady}
+            />
+          }
+        />
 
         {/* Rider flow */}
         <Route path="/find-a-ride" element={<FindRide />} />

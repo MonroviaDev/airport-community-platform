@@ -732,6 +732,116 @@ nav a:hover {
   margin-top: 18px;
 }
 
+.account-interest-link {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.saved-interest-card {
+  margin: 0 auto;
+}
+
+.saved-interest-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.saved-interest-heading h1 {
+  margin-bottom: 0;
+}
+
+.interest-status {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.interest-status.active,
+.interest-status.matched {
+  background: #e8f7ef;
+  color: #19704b;
+}
+
+.interest-status.paused,
+.interest-status.closed {
+  background: #eef1f5;
+  color: #66758a;
+}
+
+.saved-interest-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 26px 0;
+}
+
+.saved-interest-details div {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f5f8fc;
+}
+
+.saved-interest-details dt {
+  margin-bottom: 5px;
+  color: #7a899e;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.saved-interest-details dd {
+  margin: 0;
+  color: #2e435f;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.saved-interest-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.saved-interest-actions > * {
+  flex: 1;
+  justify-content: center;
+}
+
+.close-interest-button {
+  padding: 12px 17px;
+  border: 1px solid #dfb9b9;
+  border-radius: 9px;
+  background: white;
+  color: #9b3535;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.close-interest-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 650px) {
+  .saved-interest-heading,
+  .saved-interest-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .saved-interest-details {
+    grid-template-columns: 1fr;
+  }
+}
+
 .privacy-note,
 .privacy-tip,
 .safety-note {
