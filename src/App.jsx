@@ -1,4 +1,11 @@
-import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Link,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./App.css";
 import {
@@ -7,6 +14,7 @@ import {
   displayDays,
   displayTime,
   findMember,
+  findSyntheticMatches,
   findVanpoolCluster,
   parseTripSummary,
 } from "./lib/commutePlanner";
@@ -194,21 +202,22 @@ function Transportation() {
           <span>Compare my options →</span>
         </Link>
 
-        <Link className="transport-card" to="/find-a-ride">
+        <Link className="transport-card" to="/plan-my-commute">
           <span className="transport-icon">🚗</span>
           <h2>I Need a Ride</h2>
           <p>
-            Find potential drivers whose route and airport schedule may fit
-            yours.
+            Enter your commute and test potential drivers from the full
+            synthetic workforce model.
           </p>
           <span>Find ride matches →</span>
         </Link>
 
-        <Link className="transport-card" to="/offer-a-ride">
+        <Link className="transport-card" to="/plan-my-commute">
           <span className="transport-icon">🚘</span>
           <h2>I Can Give a Ride</h2>
           <p>
-            See whether airport workers may fit the commute you already make.
+            Enter your commute and test potential riders from the full
+            synthetic workforce model.
           </p>
           <span>See potential riders →</span>
         </Link>
@@ -560,6 +569,20 @@ function CommuteResults() {
         </div>
       )}
 
+      <div className="modeled-match-cta">
+        <div>
+          <span className="eyebrow">SYNTHETIC MATCH LAB</span>
+          <h2>See who in the 6,521-member model fits this commute.</h2>
+          <p>
+            Compare schedules, work areas and home commute zones. Every result
+            is a test profile—not a real employee or available ride.
+          </p>
+        </div>
+        <Link className="primary-button" to="/ride-matches">
+          Explore Modeled Matches →
+        </Link>
+      </div>
+
       <div className="prototype-note">
         <strong>
           {isDemo ? "Demo scenario: " : "Planning estimate: "}
@@ -731,6 +754,7 @@ function TransportationInterest({ session, authReady }) {
 
     try {
       await saveTransportationInterest(interest);
+      sessionStorage.setItem("airportMatchRole", interest.rideRole);
       sessionStorage.setItem(
         "latestTransportationInterest",
         JSON.stringify(interest)
@@ -1688,6 +1712,10 @@ function Profile({ session, authReady }) {
 
     try {
       await saveMyMemberProfile(profile);
+      sessionStorage.setItem(
+        "airportMatchRole",
+        profile.sharedRideRole || "either"
+      );
       navigate("/ride-matches");
     } catch (saveError) {
       setError(saveError.message);
@@ -1819,107 +1847,170 @@ function Profile({ session, authReady }) {
 }
 
 function RideMatches() {
-  return (
-    <main className="page">
-      <span className="eyebrow">YOUR RIDE MATCHES</span>
+  const savedPlan = readSessionObject("airportCommutePlan");
+  const [viewerRole, setViewerRole] = useState(
+    () => sessionStorage.getItem("airportMatchRole") || "either"
+  );
+  const matches = findSyntheticMatches(savedPlan.criteria, viewerRole, 18);
 
-      <h1>These commutes may work with yours.</h1>
+  function changeRole(event) {
+    const role = event.target.value;
+    setViewerRole(role);
+    sessionStorage.setItem("airportMatchRole", role);
+  }
+
+  if (!savedPlan.criteria) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card">
+          <span className="eyebrow">SYNTHETIC MATCH LAB</span>
+          <h1>Plan a commute to reveal modeled matches.</h1>
+          <p className="flow-intro">
+            We need a home ZIP, airport work area, shift and workdays before we
+            can compare your commute with the 6,521-member synthetic model.
+          </p>
+          <Link className="primary-button" to="/plan-my-commute">
+            Plan My Commute →
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page modeled-matches-page">
+      <Link className="back-link" to="/commute-results">
+        ← Back to commute options
+      </Link>
+      <span className="eyebrow">SYNTHETIC MATCH LAB</span>
+
+      <h1>{matches.length} modeled commutes may fit yours.</h1>
 
       <p className="page-intro">
-        Your starting address is never displayed. Matches are based on route,
-        schedule and airport-destination compatibility.
+        Results are ranked across all 6,521 synthetic members using ZIP-level
+        geography, airport destination, shift times and common workdays.
       </p>
 
-      <div className="match-list">
-        <MatchCard
-          initials="TM"
-          name="Tasha M."
-          role="DRIVER — OFFERING RIDES"
-          current="Drives herself to work"
-          looking="1–2 regular riders"
-          score="92%"
-          direction="TO WORK"
-          proximity="Route passes about 0.8 mi from your starting area"
-          airport="Domestic Terminal"
-          time="Usually arrives 5:25 AM"
-          days="Mon • Tue • Thu • Fri"
-        />
-
-        <MatchCard
-          initials="JR"
-          name="James R."
-          role="DRIVER OR RIDER"
-          current="Usually drives to work"
-          looking="Open to sharing the commute"
-          score="87%"
-          direction="TO WORK"
-          proximity="Route passes about 1.4 mi from your starting area"
-          airport="Delta G.O."
-          time="Usually arrives 5:30 AM"
-          days="Mon • Wed • Thu • Fri"
-        />
-
-        <MatchCard
-          initials="AK"
-          name="Angela K."
-          role="RIDER — LOOKING FOR A DRIVER"
-          current="Currently gets rides from family"
-          looking="Regular transportation"
-          score="81%"
-          direction="RIDE HOME"
-          proximity="Destination is near your homebound route"
-          airport="Domestic Terminal"
-          time="Shift ends around 2:45 PM"
-          days="Tue • Wed • Thu • Fri"
-        />
+      <div className="synthetic-data-notice">
+        <strong>Test data only</strong>
+        <span>
+          These generated names and commute profiles do not represent real
+          people, registered accounts or currently available rides.
+        </span>
       </div>
+
+      <label className="match-role-filter">
+        I want to test matches as
+        <select value={viewerRole} onChange={changeRole}>
+          <option value="rider">a rider looking for a driver</option>
+          <option value="driver">a driver looking for riders</option>
+          <option value="either">someone open to either</option>
+        </select>
+      </label>
+
+      <div className="match-list">
+        {matches.map((match) => (
+          <MatchCard key={match.id} match={match} />
+        ))}
+      </div>
+
+      {!matches.length && (
+        <div className="prototype-note">
+          <strong>No close modeled matches for this filter.</strong> Try the
+          “open to either” role or adjust your commute by up to 30 minutes.
+        </div>
+      )}
     </main>
   );
 }
 
-function MatchCard(props) {
+function roleLabel(role) {
+  if (role === "driver") return "MODELED DRIVER";
+  if (role === "rider") return "MODELED RIDER";
+  return "MODELED DRIVER OR RIDER";
+}
+
+function lookingForLabel(role) {
+  if (role === "driver") return "Compatible modeled riders";
+  if (role === "rider") return "A compatible modeled driver";
+  return "Either side of a shared commute";
+}
+
+function MatchCard({ match }) {
+  const proximity = match.sameZip
+    ? `Same ZIP-code commute area (${match.homeZip})`
+    : match.sameCounty
+      ? `Same county commute area (${match.homeCounty.replace(" County, GA", "")})`
+      : `${match.homeCounty.replace(" County, GA", "")} commute corridor`;
+
   return (
     <div className="match-card v2-match">
-      <div className="avatar">{props.initials}</div>
+      <div className="avatar">{match.initials}</div>
 
       <div className="match-main">
         <div className="match-title">
-          <h2>{props.name}</h2>
-          <span className="role-badge">{props.role}</span>
+          <h2>{match.name}</h2>
+          <span className="role-badge">{roleLabel(match.role)}</span>
         </div>
 
         <div className="score-row">
-          <strong>
-            {props.score} {props.direction}
-          </strong>
+          <strong>{match.score}% COMMUTE FIT</strong>
         </div>
 
         <div className="commute-status">
           <p>
-            <strong>Current commute:</strong> {props.current}
+            <strong>Modeled commute:</strong> {match.currentCommute}
           </p>
           <p>
-            <strong>Looking for:</strong> {props.looking}
+            <strong>Testing as:</strong> {lookingForLabel(match.role)}
           </p>
         </div>
 
         <div className="match-facts">
-          <span>📍 {props.proximity}</span>
-          <span>✈️ {props.airport}</span>
-          <span>🕒 {props.time}</span>
-          <span>📅 {props.days}</span>
+          <span>📍 {proximity}</span>
+          <span>✈️ {match.airportDestination}</span>
+          <span>🕒 {displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</span>
+          <span>📅 {displayDays(match.commonDays)}</span>
         </div>
       </div>
 
-      <Link className="primary-button" to="/match/tasha">
-        View Match
+      <Link className="primary-button" to={`/match/${match.id}`}>
+        View Model
       </Link>
     </div>
   );
 }
 
 function MatchProfile() {
-  const navigate = useNavigate();
+  const { id } = useParams();
+  const savedPlan = readSessionObject("airportCommutePlan");
+  const viewerRole = sessionStorage.getItem("airportMatchRole") || "either";
+  const match = findSyntheticMatches(savedPlan.criteria, viewerRole, commuteMembers.length)
+    .find((candidate) => candidate.id === id);
+
+  if (!match) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card">
+          <span className="eyebrow">SYNTHETIC MATCH LAB</span>
+          <h1>That modeled match is no longer in this result set.</h1>
+          <p className="flow-intro">
+            The commute or role filter may have changed. Return to the current
+            modeled results and choose another profile.
+          </p>
+          <Link className="primary-button" to="/ride-matches">
+            Return to Modeled Matches →
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const proximity = match.sameZip
+    ? `Same ZIP-code commute area (${match.homeZip})`
+    : match.sameCounty
+      ? `Same county commute area (${match.homeCounty.replace(" County, GA", "")})`
+      : `${match.homeCounty.replace(" County, GA", "")} commute corridor`;
 
   return (
     <main className="page match-profile-page">
@@ -1929,98 +2020,86 @@ function MatchProfile() {
 
       <section className="driver-profile-card">
         <div className="driver-profile-top">
-          <div className="avatar large-avatar">TM</div>
+          <div className="avatar large-avatar">{match.initials}</div>
 
           <div className="driver-identity">
-            <span className="role-badge">DRIVER — OFFERING RIDES</span>
-            <h1>Tasha M.</h1>
-            <p className="rating">★ 4.9 · 42 shared trips</p>
+            <span className="role-badge">{roleLabel(match.role)}</span>
+            <h1>{match.name}</h1>
+            <p className="rating">Synthetic profile · {match.id}</p>
           </div>
+        </div>
+
+        <div className="synthetic-data-notice compact-notice">
+          <strong>Not a real person</strong>
+          <span>This generated profile exists only to test matching behavior.</span>
         </div>
 
         <div className="compatibility-heading">
           <span className="eyebrow">COMMUTE COMPATIBILITY</span>
-          <h2>How Tasha's commute compares with yours</h2>
+          <h2>How this modeled commute compares with yours</h2>
         </div>
 
-        <div className="direction-match-grid">
+        <div className="direction-match-grid single-model-result">
           <div className="direction-match excellent">
             <div className="direction-match-header">
-              <span>✈️ TO WORK</span>
-              <strong>92%</strong>
+              <span>↔ OVERALL COMMUTE FIT</span>
+              <strong>{match.score}%</strong>
             </div>
 
-            <h3>Excellent match</h3>
+            <h3>{match.score >= 90 ? "Excellent modeled fit" : "Strong modeled fit"}</h3>
 
             <ul>
-              <li>Route passes about 0.8 mi from your starting area</li>
-              <li>Tasha normally arrives around 5:25 AM</li>
-              <li>Your airport destinations are compatible</li>
-              <li>4 common commute days</li>
+              <li>{proximity}</li>
+              <li>Shift runs {displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</li>
+              <li>Same airport work area: {match.airportDestination}</li>
+              <li>{match.commonDays.length} common modeled workdays</li>
             </ul>
-          </div>
-
-          <div className="direction-match unavailable">
-            <div className="direction-match-header">
-              <span>🏠 RIDE HOME</span>
-              <strong>—</strong>
-            </div>
-
-            <h3>Not currently available</h3>
-
-            <p>
-              Tasha's afternoon schedule doesn't currently match your ride-home
-              request.
-            </p>
           </div>
         </div>
 
         <div className="driver-details-grid">
           <div>
             <small>CURRENT COMMUTE</small>
-            <strong>Drives herself to work</strong>
+            <strong>{match.currentCommute}</strong>
           </div>
 
           <div>
             <small>LOOKING FOR</small>
-            <strong>1–2 regular riders</strong>
+            <strong>{lookingForLabel(match.role)}</strong>
           </div>
 
           <div>
-            <small>SEATS AVAILABLE</small>
-            <strong>2</strong>
+            <small>COMMON WORKDAYS</small>
+            <strong>{displayDays(match.commonDays)}</strong>
           </div>
 
           <div>
-            <small>RIDE TYPE</small>
-            <strong>Regular or occasional</strong>
+            <small>HOME AREA</small>
+            <strong>{match.homeZip} · {match.homeCounty.replace(" County, GA", "")}</strong>
           </div>
 
           <div>
             <small>AIRPORT DESTINATION</small>
-            <strong>Domestic Terminal</strong>
+            <strong>{match.airportDestination}</strong>
           </div>
 
           <div>
-            <small>TYPICAL ARRIVAL</small>
-            <strong>5:25 AM</strong>
+            <small>MODELED SHIFT</small>
+            <strong>{displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</strong>
           </div>
         </div>
 
         <div className="route-privacy-box">
-          <strong>🔒 Location privacy</strong>
+          <strong>🔒 ZIP-level testing</strong>
           <p>
-            Tasha can see only your approximate route compatibility at this
-            stage. Your exact starting address is not shown.
+            The model compares commute areas, not exact home addresses. It does
+            not contact anyone or create a real ride request.
           </p>
         </div>
 
-        <button
-          className="continue-button"
-          onClick={() => navigate("/request-ride")}
-        >
-          Request a Ride with Tasha →
-        </button>
+        <Link className="continue-button modeled-return-button" to="/ride-matches">
+          Compare Other Modeled Matches →
+        </Link>
       </section>
     </main>
   );
