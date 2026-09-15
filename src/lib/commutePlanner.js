@@ -139,8 +139,10 @@ export function findVanpoolCluster(member) {
 }
 
 export function displayDays(days) {
-  return days
-    .split("|")
+  const normalizedDays = Array.isArray(days) ? days : (days || "").split("|");
+
+  return normalizedDays
+    .filter(Boolean)
     .map((day) => day.charAt(0).toUpperCase() + day.slice(1, 3))
     .join(" · ");
 }

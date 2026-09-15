@@ -36,6 +36,11 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Connect eligible ZIP/shift combinations to privacy-safe vanpool opportunity clusters.
 - Carry commute details into a shared-transportation interest flow for riders and potential drivers.
 
+Synthetic scenarios are isolated in a labeled Demo Mode and cannot be saved to
+the live member-interest table. For signed-in members, the app saves the
+commute details they entered while using the synthetic population only to
+model and rank recommendations.
+
 The planner uses synthetic commute records for modeling. Signed-in member
 profiles and transportation-interest responses are stored privately in
 Supabase without exact home addresses. Live schedules and geocoded addresses

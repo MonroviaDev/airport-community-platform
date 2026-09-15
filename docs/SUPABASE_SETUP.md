@@ -27,6 +27,9 @@ Run the query once. It creates:
 Then run `202609150002_member_commute_preferences.sql` to add the onboarding
 preferences stored with each member's private profile.
 
+Run `202609150003_member_name_fields.sql` to store first name and last initial
+separately while generating a privacy-safe public display name.
+
 ## 3. Configure the local app
 
 Copy `.env.example` to `.env.local`, then enter the browser-safe values from

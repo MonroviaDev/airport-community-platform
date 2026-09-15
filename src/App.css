@@ -573,6 +573,70 @@ nav a:hover {
   line-height: 1.4;
 }
 
+.demo-mode-panel {
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid #d9e3ef;
+  border-radius: 10px;
+  background: #f7faff;
+  text-align: left;
+}
+
+.demo-mode-panel > strong {
+  color: #234a78;
+  font-size: 13px;
+}
+
+.demo-mode-panel > p {
+  margin: 4px 0 12px;
+  color: #6d7f94;
+  font-size: 12px;
+}
+
+.demo-results-banner {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 18px 0;
+  padding: 14px 17px;
+  border: 1px solid #bcd4f2;
+  border-radius: 11px;
+  background: #edf6ff;
+  color: #315879;
+}
+
+.demo-results-banner strong {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 20px;
+  background: #1473e6;
+  color: white;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.demo-results-banner span {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.profile-name-row {
+  align-items: end;
+}
+
+.profile-name-row label:first-child {
+  flex: 3;
+}
+
+.profile-name-row label:last-child {
+  flex: 1;
+}
+
+.profile-name-help {
+  margin-top: -9px;
+}
+
 .auth-flow-card {
   margin: 0 auto;
 }

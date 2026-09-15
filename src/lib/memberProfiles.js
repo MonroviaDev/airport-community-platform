@@ -23,7 +23,7 @@ export async function loadMyMemberProfile() {
   const user = await authenticatedUser();
   const { data, error } = await client
     .from("member_profiles")
-    .select("display_name, airport_code, current_commute_mode, shared_ride_role, verification_status")
+    .select("display_name, first_name, last_initial, airport_code, current_commute_mode, shared_ride_role, verification_status")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -34,9 +34,18 @@ export async function loadMyMemberProfile() {
 export async function saveMyMemberProfile(profile) {
   const client = requireSupabase();
   const user = await authenticatedUser();
+  const firstName = profile.firstName.trim();
+  const lastInitial = profile.lastInitial.trim().charAt(0).toUpperCase();
+
+  if (!/^\p{L}$/u.test(lastInitial)) {
+    throw new Error("Enter one letter for your last initial.");
+  }
+
   const payload = {
     user_id: user.id,
-    display_name: profile.displayName.trim(),
+    display_name: `${firstName} ${lastInitial}.`,
+    first_name: firstName,
+    last_initial: lastInitial,
     airport_code: "ATL",
     current_commute_mode: profile.currentCommuteMode,
     shared_ride_role: profile.sharedRideRole,

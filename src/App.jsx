@@ -237,12 +237,14 @@ function PlanMyCommute() {
   const navigate = useNavigate();
   const [demoId, setDemoId] = useState("");
   const [showSamples, setShowSamples] = useState(false);
+  const [planError, setPlanError] = useState("");
   const selectedDemo = commuteMembers.find(
     (member) => member.synthetic_id === demoId
   );
 
   function plan(event) {
     event.preventDefault();
+    setPlanError("");
     const form = new FormData(event.currentTarget);
     const criteria = {
       syntheticId: demoId,
@@ -252,11 +254,21 @@ function PlanMyCommute() {
       shiftEnd: form.get("shiftEnd"),
       days: form.getAll("days"),
     };
+
+    if (!criteria.days.length) {
+      setPlanError("Select at least one normal workday.");
+      return;
+    }
+
     const member = findMember(criteria);
 
     sessionStorage.setItem(
       "airportCommutePlan",
-      JSON.stringify({ criteria, memberId: member?.synthetic_id || null })
+      JSON.stringify({
+        mode: demoId ? "demo" : "member",
+        criteria,
+        modelMemberId: member?.synthetic_id || null,
+      })
     );
     navigate("/commute-results");
   }
@@ -347,6 +359,12 @@ function PlanMyCommute() {
             <p>Exact addresses are not needed for this early commute analysis.</p>
           </div>
 
+          {planError && (
+            <div className="auth-message error" role="alert">
+              {planError}
+            </div>
+          )}
+
           <button className="continue-button" type="submit">
             Compare My Commute Options →
           </button>
@@ -358,29 +376,33 @@ function PlanMyCommute() {
               onClick={() => setShowSamples((visible) => !visible)}
               aria-expanded={showSamples}
             >
-              {showSamples ? "Hide sample commutes" : "Preview a sample commute"}
+              {showSamples ? "Hide Demo Mode" : "Explore Demo Mode"}
             </button>
 
             {showSamples && (
-              <label className="demo-picker">
-                Choose an example
-                <select
-                  value={demoId}
-                  onChange={(event) => setDemoId(event.target.value)}
-                >
-                  <option value="">Select a sample commute</option>
-                  {demoProfiles.map((profile) => (
-                    <option key={profile.id} value={profile.id}>
-                      {profile.label}
-                    </option>
-                  ))}
-                </select>
-                {demoId && (
-                  <small>
-                    {demoProfiles.find((profile) => profile.id === demoId)?.detail}
-                  </small>
-                )}
-              </label>
+              <div className="demo-mode-panel">
+                <strong>Demo scenarios are for exploration only.</strong>
+                <p>They cannot be submitted to the live member interest list.</p>
+                <label className="demo-picker">
+                  Choose an example
+                  <select
+                    value={demoId}
+                    onChange={(event) => setDemoId(event.target.value)}
+                  >
+                    <option value="">Select a demo commute</option>
+                    {demoProfiles.map((profile) => (
+                      <option key={profile.id} value={profile.id}>
+                        {profile.label}
+                      </option>
+                    ))}
+                  </select>
+                  {demoId && (
+                    <small>
+                      {demoProfiles.find((profile) => profile.id === demoId)?.detail}
+                    </small>
+                  )}
+                </label>
+              </div>
             )}
           </div>
         </form>
@@ -409,7 +431,9 @@ function CommuteResults() {
   const savedPlan = readSessionObject("airportCommutePlan");
 
   const member = commuteMembers.find(
-    (candidate) => candidate.synthetic_id === savedPlan.memberId
+    (candidate) =>
+      candidate.synthetic_id ===
+      (savedPlan.modelMemberId || savedPlan.memberId)
   );
 
   if (!member) {
@@ -438,6 +462,17 @@ function CommuteResults() {
   const martaComplete = member.marta_full_schedule === "true";
   const xpressComplete = member.xpress_marta_full_schedule === "true";
   const hasPartialTransit = member.transportation_recommendation.includes("partial");
+  const isDemo =
+    savedPlan.mode === "demo" || Boolean(savedPlan.criteria?.syntheticId);
+  const plannedCommute = {
+    homeZip: savedPlan.criteria?.homeZip || member.home_zcta,
+    destination: savedPlan.criteria?.destination || member.airport_destination,
+    shiftStart: savedPlan.criteria?.shiftStart || member.shift_start_time,
+    shiftEnd: savedPlan.criteria?.shiftEnd || member.shift_end_time,
+    days: savedPlan.criteria?.days?.length
+      ? savedPlan.criteria.days
+      : member.work_days,
+  };
 
   return (
     <main className="page commute-results-page">
@@ -446,9 +481,9 @@ function CommuteResults() {
       <div className="commute-results-heading">
         <div>
           <span className="eyebrow">YOUR COMMUTE PLAN</span>
-          <h1>{member.home_zcta} to {member.airport_destination}</h1>
+          <h1>{plannedCommute.homeZip} to {plannedCommute.destination}</h1>
           <p>
-            {displayDays(member.work_days)} · {displayTime(member.shift_start_time)}–{displayTime(member.shift_end_time)}
+            {displayDays(plannedCommute.days)} · {displayTime(plannedCommute.shiftStart)}–{displayTime(plannedCommute.shiftEnd)}
           </p>
         </div>
         <div className={`recommendation-badge ${martaComplete || xpressComplete ? "viable" : "shared"}`}>
@@ -458,6 +493,16 @@ function CommuteResults() {
           </strong>
         </div>
       </div>
+
+      {isDemo && (
+        <div className="demo-results-banner">
+          <strong>Demo Mode</strong>
+          <span>
+            Explore these modeled recommendations, then enter your own commute
+            to join the live interest list.
+          </span>
+        </div>
+      )}
 
       <div className="commute-option-list">
         <CommuteOption
@@ -491,8 +536,8 @@ function CommuteResults() {
           tone={vanpool ? "shared" : "partial"}
           summary={vanpool ? `${vanpool.home_zctas.replaceAll("|", ", ")} · ${vanpool.start_window} start window` : `${member.home_county} · ${member.shift_family.replace("_", " ")} shift`}
           note={vanpool ? "This corridor shows strong potential for shared transportation. Actual availability depends on employee interest." : "No shared-ride group is available yet, but joining the interest list can help build one."}
-          action="I'm Interested"
-          actionLink="/transportation-interest"
+          action={isDemo ? "Enter My Real Commute" : "I'm Interested"}
+          actionLink={isDemo ? "/plan-my-commute" : "/transportation-interest"}
         />
       </div>
 
@@ -513,7 +558,7 @@ function CommuteResults() {
 
       <div className="prototype-note">
         <strong>
-          {savedPlan.criteria?.syntheticId ? "Sample commute: " : "Planning estimate: "}
+          {isDemo ? "Demo scenario: " : "Planning estimate: "}
         </strong>
         Results use modeled commute patterns, not live reservations or registered
         employee availability.
@@ -573,8 +618,12 @@ function TransportationInterest({ session, authReady }) {
   const [error, setError] = useState("");
   const savedPlan = readSessionObject("airportCommutePlan");
   const member = commuteMembers.find(
-    (candidate) => candidate.synthetic_id === savedPlan.memberId
+    (candidate) =>
+      candidate.synthetic_id ===
+      (savedPlan.modelMemberId || savedPlan.memberId)
   );
+  const isDemo =
+    savedPlan.mode === "demo" || Boolean(savedPlan.criteria?.syntheticId);
 
   if (!member) {
     return (
@@ -591,6 +640,27 @@ function TransportationInterest({ session, authReady }) {
             onClick={() => navigate("/plan-my-commute")}
           >
             Plan My Commute →
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  if (isDemo) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">DEMO MODE</span>
+          <h1>Demo commutes cannot join the live list.</h1>
+          <p className="flow-intro">
+            Enter your own ZIP, airport work area, shift and workdays before
+            saving a transportation interest.
+          </p>
+          <button
+            className="continue-button"
+            onClick={() => navigate("/plan-my-commute")}
+          >
+            Enter My Real Commute →
           </button>
         </div>
       </main>
@@ -642,13 +712,13 @@ function TransportationInterest({ session, authReady }) {
     const form = new FormData(event.currentTarget);
     const interest = {
       createdAt: new Date().toISOString(),
-      memberId: member.synthetic_id,
-      homeZip: member.home_zcta,
+      modelMemberId: member.synthetic_id,
+      homeZip: savedPlan.criteria.homeZip,
       homeCounty: member.home_county,
-      airportDestination: member.airport_destination,
-      shiftStart: member.shift_start_time,
-      shiftEnd: member.shift_end_time,
-      workDays: member.work_days,
+      airportDestination: savedPlan.criteria.destination,
+      shiftStart: savedPlan.criteria.shiftStart,
+      shiftEnd: savedPlan.criteria.shiftEnd,
+      workDays: savedPlan.criteria.days,
       rideRole: form.get("rideRole"),
       sharedMode: form.get("sharedMode"),
       frequency: form.get("frequency"),
@@ -788,22 +858,22 @@ function TransportationInterest({ session, authReady }) {
 
         <aside className="interest-summary-card">
           <span className="eyebrow">YOUR COMMUTE</span>
-          <h2>{member.home_zcta} to the airport</h2>
+          <h2>{savedPlan.criteria.homeZip} to the airport</h2>
           <dl>
             <div>
               <dt>Work area</dt>
-              <dd>{member.airport_destination}</dd>
+              <dd>{savedPlan.criteria.destination}</dd>
             </div>
             <div>
               <dt>Shift</dt>
               <dd>
-                {displayTime(member.shift_start_time)}–
-                {displayTime(member.shift_end_time)}
+                {displayTime(savedPlan.criteria.shiftStart)}–
+                {displayTime(savedPlan.criteria.shiftEnd)}
               </dd>
             </div>
             <div>
               <dt>Workdays</dt>
-              <dd>{displayDays(member.work_days)}</dd>
+              <dd>{displayDays(savedPlan.criteria.days)}</dd>
             </div>
           </dl>
           <Link to="/plan-my-commute">Change commute details</Link>
@@ -1373,7 +1443,8 @@ function Account({ session, authReady, onSignOut }) {
 function Profile({ session, authReady }) {
   const navigate = useNavigate();
   const [profile, setProfile] = useState({
-    displayName: "",
+    firstName: "",
+    lastInitial: "",
     currentCommuteMode: "",
     sharedRideRole: "",
   });
@@ -1393,8 +1464,14 @@ function Profile({ session, authReady }) {
     loadMyMemberProfile()
       .then((savedProfile) => {
         if (!active || !savedProfile) return;
+        const legacyName = (savedProfile.display_name || "").trim().split(/\s+/);
+        const legacyInitial =
+          legacyName.length > 1
+            ? legacyName.at(-1).replace(/[^A-Za-z]/g, "").charAt(0)
+            : "";
         setProfile({
-          displayName: savedProfile.display_name || "",
+          firstName: savedProfile.first_name || legacyName[0] || "",
+          lastInitial: savedProfile.last_initial || legacyInitial,
           currentCommuteMode: savedProfile.current_commute_mode || "",
           sharedRideRole: savedProfile.shared_ride_role || "",
         });
@@ -1468,21 +1545,35 @@ function Profile({ session, authReady }) {
           We already saved your commute. We only need a few details about you.
         </p>
 
-        <label>
-          Public display name
-          <input
-            required
-            maxLength="80"
-            placeholder="Example: Phillip R."
-            autoComplete="name"
-            value={profile.displayName}
-            onChange={(event) => updateProfile("displayName", event.target.value)}
-          />
-          <small className="field-help">
-            Use your first name and last initial. Your full last name is not
-            needed.
-          </small>
-        </label>
+        <div className="form-row profile-name-row">
+          <label>
+            First name
+            <input
+              required
+              maxLength="60"
+              placeholder="Phillip"
+              autoComplete="given-name"
+              value={profile.firstName}
+              onChange={(event) => updateProfile("firstName", event.target.value)}
+            />
+          </label>
+          <label>
+            Last initial
+            <input
+              required
+              maxLength="1"
+              placeholder="R"
+              title="Enter one letter"
+              autoComplete="off"
+              value={profile.lastInitial}
+              onChange={(event) => updateProfile("lastInitial", event.target.value)}
+            />
+          </label>
+        </div>
+        <small className="field-help profile-name-help">
+          Other members will see only your first name and last initial—for
+          example, Phillip R.
+        </small>
 
         <label>
           How do you currently get to work most often?
