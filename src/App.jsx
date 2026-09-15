@@ -12,6 +12,7 @@ import {
 } from "./lib/commutePlanner";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { loadMyMemberProfile, saveMyMemberProfile } from "./lib/memberProfiles";
+import { saveTransportationInterest } from "./lib/transportationInterests";
 
 const destinations = [
   "Domestic Terminal",
@@ -29,15 +30,6 @@ function readSessionObject(key) {
     return JSON.parse(sessionStorage.getItem(key) || "{}");
   } catch {
     return {};
-  }
-}
-
-function readLocalArray(key) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key) || "[]");
-    return Array.isArray(value) ? value : [];
-  } catch {
-    return [];
   }
 }
 
@@ -575,8 +567,10 @@ function TripLeg({ label, trip }) {
   );
 }
 
-function TransportationInterest() {
+function TransportationInterest({ session, authReady }) {
   const navigate = useNavigate();
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
   const savedPlan = readSessionObject("airportCommutePlan");
   const member = commuteMembers.find(
     (candidate) => candidate.synthetic_id === savedPlan.memberId
@@ -603,14 +597,54 @@ function TransportationInterest() {
     );
   }
 
-  function saveInterest(event) {
+  if (!authReady) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card" aria-live="polite">
+          <span className="eyebrow">SHARED TRANSPORTATION</span>
+          <h1>Checking your account…</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SHARED TRANSPORTATION</span>
+          <h1>Sign in to join the interest list.</h1>
+          <p className="flow-intro">
+            Your commute plan is saved on this device. Sign in so your interest
+            can be stored privately with your account.
+          </p>
+          <button
+            className="continue-button"
+            onClick={() => {
+              sessionStorage.setItem(
+                "airportAuthReturnTo",
+                "/transportation-interest"
+              );
+              navigate("/register");
+            }}
+          >
+            Sign In to Continue →
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  async function saveInterest(event) {
     event.preventDefault();
+    setSaving(true);
+    setError("");
     const form = new FormData(event.currentTarget);
     const interest = {
-      id: `interest-${Date.now()}`,
       createdAt: new Date().toISOString(),
       memberId: member.synthetic_id,
       homeZip: member.home_zcta,
+      homeCounty: member.home_county,
       airportDestination: member.airport_destination,
       shiftStart: member.shift_start_time,
       shiftEnd: member.shift_end_time,
@@ -621,16 +655,17 @@ function TransportationInterest() {
       notificationPreference: form.get("notificationPreference"),
     };
 
-    const interests = readLocalArray("airportTransportationInterests");
-    localStorage.setItem(
-      "airportTransportationInterests",
-      JSON.stringify([...interests, interest])
-    );
-    sessionStorage.setItem(
-      "latestTransportationInterest",
-      JSON.stringify(interest)
-    );
-    navigate("/interest-confirmed");
+    try {
+      await saveTransportationInterest(interest);
+      sessionStorage.setItem(
+        "latestTransportationInterest",
+        JSON.stringify(interest)
+      );
+      navigate("/interest-confirmed");
+    } catch (saveError) {
+      setError(saveError.message);
+      setSaving(false);
+    }
   }
 
   return (
@@ -735,13 +770,19 @@ function TransportationInterest() {
           </label>
 
           <div className="prototype-storage-note">
-            <strong>Prototype privacy:</strong> No email, phone number or exact
-            address is collected. This demonstration saves the response only
-            on this device until secure accounts are connected.
+            <strong>Privacy protected:</strong> Your interest is stored with
+            your secure account. Other members cannot see your email, phone
+            number or exact address.
           </div>
 
-          <button className="continue-button" type="submit">
-            Join the Interest List →
+          {error && (
+            <div className="auth-message error" role="alert">
+              {error}
+            </div>
+          )}
+
+          <button className="continue-button" type="submit" disabled={saving}>
+            {saving ? "Saving securely…" : "Join the Interest List →"}
           </button>
         </form>
 
@@ -820,8 +861,8 @@ function InterestConfirmed() {
         <span className="eyebrow">INTEREST SAVED</span>
         <h1>You're helping a shared commute take shape.</h1>
         <p>
-          Your prototype response is saved on this device. No driver has been
-          contacted and no ride has been scheduled.
+          Your interest is saved securely with your account. No driver has
+          been contacted and no ride has been scheduled.
         </p>
 
         <div className="interest-confirmation-summary">
@@ -844,9 +885,8 @@ function InterestConfirmed() {
         <div className="next-step-box">
           <strong>What happens later?</strong>
           <p>
-            After secure accounts are connected, compatible employees can be
-            notified when enough people express interest in the same corridor
-            and shift.
+            Compatible employees can be notified later when enough people
+            express interest in the same corridor and shift.
           </p>
         </div>
 
@@ -1201,6 +1241,12 @@ function Register({ session, authReady }) {
   }
 
   if (session) {
+    const returnTo = sessionStorage.getItem("airportAuthReturnTo") || "/profile";
+    const continueLabel =
+      returnTo === "/transportation-interest"
+        ? "Continue to Transportation Interest →"
+        : "Continue to My Profile →";
+
     return (
       <main className="page flow-page">
         <div className="flow-card auth-flow-card">
@@ -1213,8 +1259,14 @@ function Register({ session, authReady }) {
               <small>{session.user.email}</small>
             </div>
           </div>
-          <button className="continue-button" onClick={() => navigate("/profile")}>
-            Continue to My Profile →
+          <button
+            className="continue-button"
+            onClick={() => {
+              sessionStorage.removeItem("airportAuthReturnTo");
+              navigate(returnTo);
+            }}
+          >
+            {continueLabel}
           </button>
           <button className="skip-button" onClick={() => navigate("/transportation")}>
             Go to Transportation
@@ -1417,15 +1469,19 @@ function Profile({ session, authReady }) {
         </p>
 
         <label>
-          First name
+          Public display name
           <input
             required
             maxLength="80"
-            placeholder="First name"
-            autoComplete="given-name"
+            placeholder="Example: Phillip R."
+            autoComplete="name"
             value={profile.displayName}
             onChange={(event) => updateProfile("displayName", event.target.value)}
           />
+          <small className="field-help">
+            Use your first name and last initial. Your full last name is not
+            needed.
+          </small>
         </label>
 
         <label>
@@ -3092,7 +3148,9 @@ function App() {
         <Route path="/commute-results" element={<CommuteResults />} />
         <Route
           path="/transportation-interest"
-          element={<TransportationInterest />}
+          element={
+            <TransportationInterest session={session} authReady={authReady} />
+          }
         />
         <Route path="/interest-confirmed" element={<InterestConfirmed />} />
 

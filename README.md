@@ -36,13 +36,16 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Connect eligible ZIP/shift combinations to privacy-safe vanpool opportunity clusters.
 - Carry commute details into a shared-transportation interest flow for riders and potential drivers.
 
-The planner uses synthetic records only. Prototype interest responses are stored locally in the browser without names, contact details or exact addresses. Live schedules, geocoded addresses, secure accounts and persistent member opt-ins remain future integrations.
+The planner uses synthetic commute records for modeling. Signed-in member
+profiles and transportation-interest responses are stored privately in
+Supabase without exact home addresses. Live schedules and geocoded addresses
+remain future integrations.
 
 ## Supabase foundation
 
-The repository includes a secure database foundation for member profiles and
-transportation interests. It is not connected to the prototype form yet; that
-connection will follow the account and sign-in work.
+The repository includes passwordless email sign-in plus secure persistence for
+member profiles and transportation interests. Row-level security restricts
+members to their own records.
 
 See [`docs/SUPABASE_SETUP.md`](docs/SUPABASE_SETUP.md) for the separate-project
 setup, migration and browser-safe environment variables.
