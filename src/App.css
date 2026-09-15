@@ -653,6 +653,12 @@ nav a:hover {
   cursor: pointer;
 }
 
+.account-profile-link {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
 .privacy-note,
 .privacy-tip,
 .safety-note {

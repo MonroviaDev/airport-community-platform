@@ -11,6 +11,7 @@ import {
   parseTripSummary,
 } from "./lib/commutePlanner";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
+import { loadMyMemberProfile, saveMyMemberProfile } from "./lib/memberProfiles";
 
 const destinations = [
   "Domestic Terminal",
@@ -1306,6 +1307,9 @@ function Account({ session, authReady, onSignOut }) {
         <p className="privacy-note">
           Your session stays active on this device until you sign out.
         </p>
+        <Link className="primary-button account-profile-link" to="/profile">
+          View or Edit My Profile
+        </Link>
         <button className="secondary-button auth-signout" onClick={onSignOut}>
           Sign Out
         </button>
@@ -1314,12 +1318,91 @@ function Account({ session, authReady, onSignOut }) {
   );
 }
 
-function Profile() {
+function Profile({ session, authReady }) {
   const navigate = useNavigate();
+  const [profile, setProfile] = useState({
+    displayName: "",
+    currentCommuteMode: "",
+    sharedRideRole: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
-  function finish(event) {
+  useEffect(() => {
+    let active = true;
+
+    if (!session) {
+      return () => {
+        active = false;
+      };
+    }
+
+    loadMyMemberProfile()
+      .then((savedProfile) => {
+        if (!active || !savedProfile) return;
+        setProfile({
+          displayName: savedProfile.display_name || "",
+          currentCommuteMode: savedProfile.current_commute_mode || "",
+          sharedRideRole: savedProfile.shared_ride_role || "",
+        });
+      })
+      .catch((loadError) => {
+        if (active) setError(loadError.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [session]);
+
+  async function finish(event) {
     event.preventDefault();
-    navigate("/ride-matches");
+    setSaving(true);
+    setError("");
+
+    try {
+      await saveMyMemberProfile(profile);
+      navigate("/ride-matches");
+    } catch (saveError) {
+      setError(saveError.message);
+      setSaving(false);
+    }
+  }
+
+  function updateProfile(field, value) {
+    setProfile((current) => ({ ...current, [field]: value }));
+  }
+
+  if (!authReady || (session && loading)) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card" aria-live="polite">
+          <span className="eyebrow">COMMUNITY PROFILE</span>
+          <h1>Loading your profile…</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">COMMUNITY PROFILE</span>
+          <h1>Sign in to create your profile.</h1>
+          <p className="flow-intro">
+            Your profile is private and linked to your secure account.
+          </p>
+          <Link className="primary-button" to="/register">
+            Sign In
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (
@@ -1335,39 +1418,60 @@ function Profile() {
 
         <label>
           First name
-          <input required placeholder="First name" />
+          <input
+            required
+            maxLength="80"
+            placeholder="First name"
+            autoComplete="given-name"
+            value={profile.displayName}
+            onChange={(event) => updateProfile("displayName", event.target.value)}
+          />
         </label>
 
         <label>
           How do you currently get to work most often?
-          <select required defaultValue="">
+          <select
+            required
+            value={profile.currentCommuteMode}
+            onChange={(event) => updateProfile("currentCommuteMode", event.target.value)}
+          >
             <option value="" disabled>
               Select one
             </option>
-            <option>Drive myself</option>
-            <option>Ride with someone</option>
-            <option>MARTA / public transit</option>
-            <option>Carpool / vanpool</option>
-            <option>Uber / Lyft / taxi</option>
-            <option>Walk / bike</option>
-            <option>Other</option>
+            <option value="drive-self">Drive myself</option>
+            <option value="ride-with-someone">Ride with someone</option>
+            <option value="transit">MARTA / public transit</option>
+            <option value="shared-ride">Carpool / vanpool</option>
+            <option value="rideshare-taxi">Uber / Lyft / taxi</option>
+            <option value="walk-bike">Walk / bike</option>
+            <option value="other">Other</option>
           </select>
         </label>
 
         <label>
           For shared rides, I am primarily:
-          <select required defaultValue="">
+          <select
+            required
+            value={profile.sharedRideRole}
+            onChange={(event) => updateProfile("sharedRideRole", event.target.value)}
+          >
             <option value="" disabled>
               Select one
             </option>
-            <option>A rider looking for a driver</option>
-            <option>A driver who can offer rides</option>
-            <option>Open to driving or riding</option>
+            <option value="rider">A rider looking for a driver</option>
+            <option value="driver">A driver who can offer rides</option>
+            <option value="either">Open to driving or riding</option>
           </select>
         </label>
 
-        <button className="continue-button" type="submit">
-          Reveal My Matches →
+        {error && (
+          <div className="auth-message error" role="alert">
+            {error}
+          </div>
+        )}
+
+        <button className="continue-button" type="submit" disabled={saving}>
+          {saving ? "Saving securely…" : "Save Profile and Reveal Matches →"}
         </button>
       </form>
     </main>
@@ -3012,7 +3116,10 @@ function App() {
             />
           }
         />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/profile"
+          element={<Profile session={session} authReady={authReady} />}
+        />
         <Route path="/ride-matches" element={<RideMatches />} />
         <Route path="/match/:id" element={<MatchProfile />} />
         <Route path="/request-ride" element={<RequestRide />} />

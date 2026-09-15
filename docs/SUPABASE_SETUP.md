@@ -11,8 +11,8 @@ Do not reuse the SurveyOps Air database.
 
 ## 2. Create the database foundation
 
-In the Supabase dashboard, open **SQL Editor**, start a new query, paste the
-contents of:
+In the Supabase dashboard, open **SQL Editor** and run each file in
+`supabase/migrations` once, in filename order. Start with:
 
 `supabase/migrations/202609150001_transportation_foundation.sql`
 
@@ -23,6 +23,9 @@ Run the query once. It creates:
 - Validation constraints and matching indexes
 - Row-level security policies that restrict members to their own records
 - No database access for signed-out visitors
+
+Then run `202609150002_member_commute_preferences.sql` to add the onboarding
+preferences stored with each member's private profile.
 
 ## 3. Configure the local app
 
