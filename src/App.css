@@ -95,6 +95,11 @@ nav a:hover {
   cursor: pointer;
 }
 
+.signin-button:hover {
+  border-color: #1473e6;
+  color: #1473e6;
+}
+
 /* HOME HERO */
 
 .hero {
@@ -358,6 +363,11 @@ nav a:hover {
   color: white;
 }
 
+.email-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .divider {
   display: flex;
   align-items: center;
@@ -552,6 +562,95 @@ nav a:hover {
 .flow-card textarea:focus {
   outline: 2px solid rgba(20, 115, 230, 0.18);
   border-color: #1473e6;
+}
+
+.auth-flow-card {
+  margin: 0 auto;
+}
+
+.auth-submit {
+  margin-top: 5px;
+}
+
+.auth-message {
+  margin: 8px 0 18px;
+  padding: 13px 15px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.auth-message.success {
+  border: 1px solid #cce7d9;
+  background: #eff9f4;
+  color: #236447;
+}
+
+.auth-message.error {
+  border: 1px solid #f0cccc;
+  background: #fff3f3;
+  color: #9a2f2f;
+}
+
+.auth-success {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin: 24px 0 8px;
+  padding: 16px;
+  border: 1px solid #cce7d9;
+  border-radius: 11px;
+  background: #eff9f4;
+  color: #236447;
+}
+
+.auth-success > span {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  flex: 0 0 34px;
+  place-items: center;
+  border-radius: 50%;
+  background: #16845b;
+  color: white;
+  font-weight: 900;
+}
+
+.auth-success strong,
+.auth-success small {
+  display: block;
+}
+
+.auth-success small {
+  margin-top: 3px;
+  color: #527563;
+}
+
+.account-detail {
+  margin: 24px 0 16px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f2f6fb;
+}
+
+.account-detail small,
+.account-detail strong {
+  display: block;
+}
+
+.account-detail small {
+  margin-bottom: 5px;
+  color: #7c8da4;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.auth-signout {
+  width: 100%;
+  margin-top: 14px;
+  cursor: pointer;
 }
 
 .privacy-note,

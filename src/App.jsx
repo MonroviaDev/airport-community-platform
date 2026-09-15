@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import {
   commuteMembers,
@@ -10,6 +10,7 @@ import {
   findVanpoolCluster,
   parseTripSummary,
 } from "./lib/commutePlanner";
+import { isSupabaseConfigured, supabase } from "./lib/supabase";
 
 const destinations = [
   "Domestic Terminal",
@@ -39,7 +40,7 @@ function readLocalArray(key) {
   }
 }
 
-function Header() {
+function Header({ session }) {
   return (
     <header>
       <Link className="brand" to="/">
@@ -57,8 +58,8 @@ function Header() {
         <Link to="/community">Resources</Link>
       </nav>
 
-      <Link className="signin-button" to="/register">
-        Sign In
+      <Link className="signin-button" to={session ? "/account" : "/register"}>
+        {session ? "My Account" : "Sign In"}
       </Link>
     </header>
   );
@@ -1143,42 +1144,171 @@ function TransportationPreview() {
   );
 }
 
-function Register() {
+function Register({ session, authReady }) {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [message, setMessage] = useState("");
+
+  async function sendMagicLink(event) {
+    event.preventDefault();
+    setStatus("sending");
+    setMessage("");
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/register`,
+        shouldCreateUser: true,
+      },
+    });
+
+    if (error) {
+      setStatus("error");
+      setMessage(error.message);
+      return;
+    }
+
+    setStatus("sent");
+    setMessage("Check your email and open the secure sign-in link.");
+  }
+
+  if (!isSupabaseConfigured) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">ACCOUNT SETUP</span>
+          <h1>Secure sign-in is not configured.</h1>
+          <p className="flow-intro">
+            Add the Supabase project URL and publishable key to your local
+            environment before testing employee accounts.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!authReady) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card" aria-live="polite">
+          <span className="eyebrow">SECURE ACCOUNT</span>
+          <h1>Checking your sign-in…</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (session) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SIGNED IN</span>
+          <h1>Welcome to Airport Community.</h1>
+          <div className="auth-success" role="status">
+            <span>✓</span>
+            <div>
+              <strong>Your secure session is active.</strong>
+              <small>{session.user.email}</small>
+            </div>
+          </div>
+          <button className="continue-button" onClick={() => navigate("/profile")}>
+            Continue to My Profile →
+          </button>
+          <button className="skip-button" onClick={() => navigate("/transportation")}>
+            Go to Transportation
+          </button>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="page flow-page">
-      <div className="flow-card">
-        <span className="eyebrow">UNLOCK YOUR MATCHES</span>
-        <h1>Create your free account.</h1>
+      <form className="flow-card auth-flow-card" onSubmit={sendMagicLink}>
+        <span className="eyebrow">SECURE EMPLOYEE ACCOUNT</span>
+        <h1>Sign in without a password.</h1>
 
         <p className="flow-intro">
-          Your commute search is saved. You won't have to enter it again.
+          Enter your email and we’ll send you a secure, one-time sign-in link.
+          New members can use the same process to create an account.
         </p>
 
-        <button className="social-button" onClick={() => navigate("/profile")}>
-          <span>G</span> Continue with Google
+        <label>
+          Email address
+          <input
+            type="email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com"
+            autoComplete="email"
+            required
+          />
+        </label>
+
+        <button className="email-button auth-submit" type="submit" disabled={status === "sending"}>
+          {status === "sending" ? "Sending secure link…" : "Email Me a Sign-In Link"}
         </button>
 
-        <button className="social-button" onClick={() => navigate("/profile")}>
-          <span>f</span> Continue with Facebook
-        </button>
-
-        <button className="social-button" onClick={() => navigate("/profile")}>
-          <span>●</span> Continue with Apple
-        </button>
-
-        <div className="divider">
-          <span>or</span>
-        </div>
-
-        <button className="email-button" onClick={() => navigate("/profile")}>
-          Sign up with email
-        </button>
+        {message && (
+          <div
+            className={status === "error" ? "auth-message error" : "auth-message success"}
+            role={status === "error" ? "alert" : "status"}
+          >
+            {message}
+          </div>
+        )}
 
         <p className="privacy-note">
-          Demo registration only. Social sign-in will be connected later.
+          We use your email for account access and service notifications. Your
+          email is not shown to other members.
         </p>
+      </form>
+    </main>
+  );
+}
+
+function Account({ session, authReady, onSignOut }) {
+  if (!authReady) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <h1>Loading your account…</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">MY ACCOUNT</span>
+          <h1>You’re signed out.</h1>
+          <p className="flow-intro">Sign in to access your member profile.</p>
+          <Link className="primary-button" to="/register">
+            Sign In
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page flow-page">
+      <div className="flow-card auth-flow-card">
+        <span className="eyebrow">MY ACCOUNT</span>
+        <h1>Your secure account</h1>
+        <div className="account-detail">
+          <small>EMAIL</small>
+          <strong>{session.user.email}</strong>
+        </div>
+        <p className="privacy-note">
+          Your session stays active on this device until you sign out.
+        </p>
+        <button className="secondary-button auth-signout" onClick={onSignOut}>
+          Sign Out
+        </button>
       </div>
     </main>
   );
@@ -2821,9 +2951,35 @@ function ComingSoon({ title, description }) {
    ========================================================= */
 
 function App() {
+  const [session, setSession] = useState(null);
+  const [authReady, setAuthReady] = useState(!isSupabaseConfigured);
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthReady(true);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      setAuthReady(true);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+  }
+
   return (
     <BrowserRouter>
-      <Header />
+      <Header session={session} />
 
       <Routes>
         <Route path="/" element={<Home />} />
@@ -2842,7 +2998,20 @@ function App() {
           path="/transportation-preview"
           element={<TransportationPreview />}
         />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/register"
+          element={<Register session={session} authReady={authReady} />}
+        />
+        <Route
+          path="/account"
+          element={
+            <Account
+              session={session}
+              authReady={authReady}
+              onSignOut={signOut}
+            />
+          }
+        />
         <Route path="/profile" element={<Profile />} />
         <Route path="/ride-matches" element={<RideMatches />} />
         <Route path="/match/:id" element={<MatchProfile />} />
