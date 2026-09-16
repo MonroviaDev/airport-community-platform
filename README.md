@@ -34,6 +34,7 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Rank MARTA, Xpress + MARTA and carpool/vanpool options.
 - Rank up to 18 compatible modeled shared commutes across all 6,521 synthetic members.
 - Convert a real starting point into an anonymous origin zone for proximity and pickup-detour scoring.
+- Suggest official Census/TIGER street names after a member enters a modeled Georgia ZIP code.
 - Display modeled inbound and return trips and explain transit schedule gaps.
 - Connect eligible ZIP/shift combinations to privacy-safe vanpool opportunity clusters.
 - Carry commute details into a shared-transportation interest flow for riders and potential drivers.
@@ -45,24 +46,31 @@ model and rank recommendations.
 
 The planner uses synthetic commute records for modeling. Signed-in member
 profiles and transportation-interest responses are stored privately in
-Supabase without exact home addresses. Live schedules and geocoded addresses
-remain future integrations.
+Supabase without exact home addresses. Live schedule feeds remain a future
+integration.
 
 All modeled match names and roles are generated test data. They do not
 represent real employees, registered accounts or available rides. The app
 labels both the list and profile views accordingly.
 
 Private origin matching uses a Vercel serverless function and the U.S. Census
-Geocoder. The app rounds returned coordinates to an approximately 0.7-mile
-zone, discards the submitted address, and stores only the rounded zone when a
-signed-in member joins the transportation-interest list. Synthetic members use
+Geocoder. A server-side street index built from the 2025 Census TIGER/Line
+Feature Names files supplies ZIP-aware suggestions without Google Places or a
+commercial geocoding key. The app rounds returned coordinates to an
+approximately 0.7-mile zone, discards the submitted address, and stores only
+the rounded zone when a signed-in member joins the transportation-interest
+list. The actual address is never shown to another user. Synthetic members use
 stable generated origin points around public ZIP-code centroids.
+
+`npm run build:census-streets` refreshes the generated street index from the
+current configured TIGER release. It requires `curl` and `unzip`; the generated
+index is committed so production does not download TIGER files at runtime.
 
 ## Vercel deployment
 
-The root `vercel.json` rewrites direct browser requests to the Vite single-page
-application. In Vercel, set these environment variables for Production,
-Preview and Development:
+The root `vercel.json` serves API functions and static files first, then routes
+remaining browser requests to the Vite single-page application. In Vercel, set
+these environment variables for Production, Preview and Development:
 
 ```bash
 VITE_SUPABASE_URL=your-project-url

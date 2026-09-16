@@ -51,12 +51,19 @@ Restart `npm run dev` after changing environment variables.
 
 ## 4. Private origin matching
 
-The production app sends a starting point to the same-origin Vercel function at
-`/api/geocode-origin`. That function uses the U.S. Census Geocoder, rounds the
-result to two decimal places (approximately a 0.7-mile zone around Atlanta),
-and returns only the rounded zone. The original address is not written to the
-application database or browser session storage.
+The production app uses `/api/street-suggestions` to search an app-owned index
+of official Census/TIGER street names after the member enters a ZIP code. Only
+the best eight suggestions are returned to the browser; no Google or commercial
+address service is used.
+
+After selection, the app sends the house number, street name and ZIP to the
+same-origin Vercel function at `/api/geocode-origin`. That function uses the
+structured U.S. Census Geocoder endpoint, rounds the result to two decimal
+places (approximately a 0.7-mile zone around Atlanta), and returns only the
+rounded zone. The original address is not written to the application database,
+browser session storage or any member-facing profile.
 
 Signed-in transportation interests save only the rounded latitude, rounded
 longitude, zone label and stated precision. Existing row-level security keeps
-those values private to the member.
+those values private to the member. Other users see commute compatibility and
+approximate zone distance, never the actual address.

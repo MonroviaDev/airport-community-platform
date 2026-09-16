@@ -1,5 +1,5 @@
 const CENSUS_GEOCODER_URL =
-  "https://geocoding.geo.census.gov/geocoder/locations/onelineaddress";
+  "https://geocoding.geo.census.gov/geocoder/locations/address";
 
 function send(status, body, extraHeaders = {}) {
   return Response.json(body, {
@@ -26,15 +26,29 @@ export default {
       return send(400, { error: "Enter a valid starting point." });
     }
 
-    const address = String(body?.address || "").trim();
-    if (address.length < 8 || address.length > 200) {
+    const streetNumber = String(body?.streetNumber || "").trim();
+    const streetName = String(body?.streetName || "").trim();
+    const zip = String(body?.zip || "").trim();
+
+    if (!/^[0-9A-Za-z][0-9A-Za-z\s/-]{0,14}$/.test(streetNumber)) {
       return send(400, {
-        error: "Enter a complete street address or nearby public place.",
+        error: "Enter a valid house or building number.",
       });
     }
 
+    if (streetName.length < 2 || streetName.length > 120) {
+      return send(400, { error: "Choose a valid street name." });
+    }
+
+    if (!/^\d{5}$/.test(zip)) {
+      return send(400, { error: "Enter a five-digit ZIP code." });
+    }
+
+    const street = `${streetNumber} ${streetName}`;
+
     const query = new URLSearchParams({
-      address,
+      street,
+      zip,
       benchmark: "Public_AR_Current",
       format: "json",
     });
@@ -42,6 +56,7 @@ export default {
     try {
       const censusResponse = await fetch(`${CENSUS_GEOCODER_URL}?${query}`, {
         headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(10000),
       });
 
       if (!censusResponse.ok) {
@@ -63,7 +78,7 @@ export default {
 
       const zoneLatitude = Number(latitude.toFixed(2));
       const zoneLongitude = Number(longitude.toFixed(2));
-      const matchedZip = String(match?.addressComponents?.zip || "").slice(0, 5);
+      const matchedZip = String(match?.addressComponents?.zip || zip).slice(0, 5);
 
       return send(200, {
         originZone: {
@@ -74,6 +89,7 @@ export default {
           source: "census-geocoder-rounded",
         },
         matchedZip: /^\d{5}$/.test(matchedZip) ? matchedZip : null,
+        matchedAddress: match?.matchedAddress || null,
       });
     } catch {
       return send(502, {

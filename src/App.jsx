@@ -20,7 +20,10 @@ import {
 } from "./lib/commutePlanner";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { loadMyMemberProfile, saveMyMemberProfile } from "./lib/memberProfiles";
-import { createPrivateOriginZone } from "./lib/privateOrigins";
+import {
+  createPrivateOriginZone,
+  loadStreetSuggestions,
+} from "./lib/privateOrigins";
 import {
   closeMyTransportationInterest,
   loadMyTransportationInterest,
@@ -253,9 +256,45 @@ function PlanMyCommute() {
   const [showSamples, setShowSamples] = useState(false);
   const [planError, setPlanError] = useState("");
   const [planning, setPlanning] = useState(false);
+  const [originZip, setOriginZip] = useState("");
+  const [streetNumber, setStreetNumber] = useState("");
+  const [streetName, setStreetName] = useState("");
+  const [streetSuggestions, setStreetSuggestions] = useState([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestionError, setSuggestionError] = useState("");
   const selectedDemo = commuteMembers.find(
     (member) => member.synthetic_id === demoId
   );
+
+  useEffect(() => {
+    if (demoId || !/^\d{5}$/.test(originZip) || streetName.trim().length < 3) {
+      return undefined;
+    }
+
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      try {
+        const suggestions = await loadStreetSuggestions(
+          originZip,
+          streetName,
+          controller.signal
+        );
+        setStreetSuggestions(suggestions);
+        setSuggestionsOpen(true);
+        setSuggestionError("");
+      } catch (error) {
+        if (error.name !== "AbortError") {
+          setStreetSuggestions([]);
+          setSuggestionError(error.message);
+        }
+      }
+    }, 220);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [demoId, originZip, streetName]);
 
   async function plan(event) {
     event.preventDefault();
@@ -278,9 +317,11 @@ function PlanMyCommute() {
     if (!demoId) {
       setPlanning(true);
       try {
-        const privateOrigin = await createPrivateOriginZone(
-          form.get("originAddress")
-        );
+        const privateOrigin = await createPrivateOriginZone({
+          streetNumber: form.get("streetNumber"),
+          streetName: form.get("streetName"),
+          zip: form.get("originZip"),
+        });
         if (!privateOrigin.matchedZip) {
           throw new Error(
             "We located that starting point but could not confirm its ZIP code. Try a complete street address."
@@ -325,30 +366,120 @@ function PlanMyCommute() {
         <form className="flow-card commute-form" key={demoId} onSubmit={plan}>
           {!demoId && (
             <>
-              <label>
-                Private commute starting point
-                <input
-                  name="originAddress"
-                  autoComplete="street-address"
-                  placeholder="Street address or nearby public place, city, state, ZIP"
-                  minLength="8"
-                  maxLength="200"
-                  required
-                />
-                <small className="field-help">
-                  Used once to create an anonymous matching zone. The address
-                  itself is not saved by Airport Community.
-                </small>
-              </label>
-
-              <div className="location-privacy compact-privacy private-origin-note">
-                <strong>🔒 Converted, rounded and discarded.</strong>
+              <div className="location-privacy private-origin-note">
+                <strong>🔒 Your address is private.</strong>
                 <p>
-                  The U.S. Census Geocoder converts this starting point to
-                  coordinates. We round it to an approximately 0.7-mile zone
-                  and retain only that zone for matching.
+                  We use it once to create an approximate commute area. Your
+                  actual address is never saved or shared with other users.
                 </p>
               </div>
+
+              <fieldset className="origin-address-fields">
+                <legend>Private commute starting point</legend>
+                <p className="field-help">
+                  Enter your ZIP first, then begin typing the Census street name.
+                </p>
+
+                <div className="origin-address-grid">
+                  <label>
+                    ZIP code
+                    <input
+                      name="originZip"
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      pattern="[0-9]{5}"
+                      maxLength="5"
+                      placeholder="30253"
+                      value={originZip}
+                      onChange={(event) => {
+                        setOriginZip(event.target.value.replace(/\D/g, "").slice(0, 5));
+                        setStreetSuggestions([]);
+                        setSuggestionError("");
+                      }}
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    House or building number
+                    <input
+                      name="streetNumber"
+                      inputMode="text"
+                      autoComplete="address-line1"
+                      maxLength="15"
+                      placeholder="123"
+                      value={streetNumber}
+                      onChange={(event) => setStreetNumber(event.target.value)}
+                      required
+                    />
+                  </label>
+                </div>
+
+                <label className="street-name-field">
+                  Street name
+                  <input
+                    name="streetName"
+                    autoComplete="off"
+                    maxLength="120"
+                    placeholder={
+                      /^\d{5}$/.test(originZip)
+                        ? "Begin typing the street name"
+                        : "Enter ZIP code first"
+                    }
+                    value={streetName}
+                    onChange={(event) => {
+                      setStreetName(event.target.value);
+                      setStreetSuggestions([]);
+                      setSuggestionError("");
+                    }}
+                    onFocus={() => setSuggestionsOpen(true)}
+                    onBlur={() => {
+                      window.setTimeout(() => setSuggestionsOpen(false), 120);
+                    }}
+                    role="combobox"
+                    aria-autocomplete="list"
+                    aria-expanded={suggestionsOpen && streetSuggestions.length > 0}
+                    aria-controls="street-suggestion-list"
+                    disabled={!/^\d{5}$/.test(originZip)}
+                    required
+                  />
+
+                  {suggestionsOpen && streetSuggestions.length > 0 && (
+                    <div
+                      className="street-suggestions"
+                      id="street-suggestion-list"
+                      role="listbox"
+                    >
+                      {streetSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          role="option"
+                          aria-selected={streetName === suggestion}
+                          onMouseDown={(event) => event.preventDefault()}
+                          onClick={() => {
+                            setStreetName(suggestion);
+                            setStreetSuggestions([]);
+                            setSuggestionsOpen(false);
+                          }}
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {suggestionError && (
+                    <small className="field-help field-error">{suggestionError}</small>
+                  )}
+                </label>
+              </fieldset>
+
+              <p className="origin-processing-note">
+                Census converts the completed address to coordinates. Airport
+                Community rounds those coordinates to an approximately
+                0.7-mile area and immediately discards the address.
+              </p>
             </>
           )}
 
@@ -1049,6 +1180,12 @@ function InterestConfirmed() {
           </div>
         </div>
 
+        <div className="prototype-storage-note">
+          <strong>Your actual address was not saved.</strong> It was used once
+          to create this approximate commute area and is never shown to other
+          users.
+        </div>
+
         <div className="next-step-box">
           <strong>What happens later?</strong>
           <p>
@@ -1228,10 +1365,10 @@ function MyTransportationInterest({ session, authReady }) {
         </dl>
 
         <div className="prototype-storage-note">
-          <strong>Private by default:</strong> This page is available only to
-          your signed-in account. The original address is not stored; only the
-          rounded commute zone appears here. Closing an interest removes it
-          from future active matching without deleting your account.
+          <strong>Your actual address is never saved or shared.</strong> Only
+          this approximate commute area is stored for matching. Closing an
+          interest removes it from future active matching without deleting
+          your account.
         </div>
 
         {error && (

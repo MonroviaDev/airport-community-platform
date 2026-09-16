@@ -11,7 +11,8 @@
     "analyze:marta-schedule": "node scripts/analyze-marta-schedule-viability.js",
     "analyze:xpress-access": "node scripts/analyze-xpress-accessibility.js",
     "analyze:combined-transit": "node scripts/analyze-combined-transit-viability.js",
-    "analyze:vanpool-opportunities": "node scripts/analyze-vanpool-opportunities.js"
+    "analyze:vanpool-opportunities": "node scripts/analyze-vanpool-opportunities.js",
+    "build:census-streets": "node scripts/build-census-street-index.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
