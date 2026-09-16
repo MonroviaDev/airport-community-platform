@@ -1,5 +1,6 @@
 import memberCsv from "../../data/synthetic-population-combined-transit-viability.csv?raw";
 import vanpoolCsv from "../../data/vanpool-opportunity-clusters.csv?raw";
+import geographyCsv from "../../data/atl-workforce-marta-accessibility.csv?raw";
 
 function parseCsv(text) {
   const rows = [];
@@ -44,6 +45,10 @@ function parseCsv(text) {
 
 export const commuteMembers = parseCsv(memberCsv);
 export const vanpoolClusters = parseCsv(vanpoolCsv);
+const zctaGeography = parseCsv(geographyCsv);
+const geographyByZcta = new Map(
+  zctaGeography.map((area) => [area.home_zcta, area])
+);
 
 const testPersonaSpecs = [
   ["SYN-00012", "Amina B."],
@@ -70,12 +75,11 @@ const testPersonaSpecs = [
 
 export const demoProfiles = testPersonaSpecs.map(([id, name]) => {
   const member = commuteMembers.find((candidate) => candidate.synthetic_id === id);
-  const county = member?.home_county?.replace(" County, GA", "") || "ATL region";
   const shift = member?.shift_family?.replace("_", "-") || "airport";
 
   return {
     id,
-    label: `${name} — ${county} · ${shift} shift`,
+    label: `${name} — ${shift} shift · ${member?.airport_destination || "Airport"}`,
     detail: `${member?.airport_destination || "Airport"} · ${member?.shift_start_time || "—"} to ${member?.shift_end_time || "—"}`,
   };
 });
@@ -89,6 +93,86 @@ function minutes(time) {
 function timeDistance(first, second) {
   const distance = Math.abs(minutes(first) - minutes(second));
   return Math.min(distance, 1440 - distance);
+}
+
+const airportDestinations = {
+  "Domestic Terminal": { latitude: 33.6407, longitude: -84.4463 },
+  "International Terminal": { latitude: 33.6401, longitude: -84.4197 },
+  "Delta TechOps": { latitude: 33.6489, longitude: -84.4334 },
+  "Delta G.O.": { latitude: 33.6563, longitude: -84.4214 },
+  "North Cargo Area": { latitude: 33.6559, longitude: -84.4518 },
+  "South Cargo Area": { latitude: 33.6262, longitude: -84.4384 },
+  "Rental Car Center": { latitude: 33.6522, longitude: -84.4638 },
+  "Other Airport Area": { latitude: 33.6407, longitude: -84.4277 },
+};
+
+function radians(degrees) {
+  return (degrees * Math.PI) / 180;
+}
+
+function haversineMiles(first, second) {
+  if (!first || !second) return null;
+  const earthRadiusMiles = 3958.8;
+  const latitudeDelta = radians(second.latitude - first.latitude);
+  const longitudeDelta = radians(second.longitude - first.longitude);
+  const latitude1 = radians(first.latitude);
+  const latitude2 = radians(second.latitude);
+  const value =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(latitude1) * Math.cos(latitude2) *
+      Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+}
+
+function syntheticOrigin(member) {
+  const geography = geographyByZcta.get(member.home_zcta);
+  if (!geography) return null;
+
+  const center = {
+    latitude: Number(geography.zcta_latitude),
+    longitude: Number(geography.zcta_longitude),
+  };
+  const number = syntheticNumber(member);
+  const angle = radians((number * 137.508) % 360);
+  const radiusMiles = 0.35 + ((number * 47) % 260) / 100;
+  const latitudeOffset = (Math.sin(angle) * radiusMiles) / 69;
+  const longitudeOffset =
+    (Math.cos(angle) * radiusMiles) /
+    (69 * Math.cos(radians(center.latitude)));
+
+  return {
+    latitude: center.latitude + latitudeOffset,
+    longitude: center.longitude + longitudeOffset,
+  };
+}
+
+function viewerOrigin(criteria, member) {
+  const latitude = Number(criteria?.originZone?.latitude);
+  const longitude = Number(criteria?.originZone?.longitude);
+  if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+    return { latitude, longitude };
+  }
+  return syntheticOrigin(member);
+}
+
+function proximityScore(distance) {
+  if (distance <= 1) return 30;
+  if (distance <= 2) return 25;
+  if (distance <= 4) return 19;
+  if (distance <= 7) return 12;
+  if (distance <= 12) return 6;
+  return 1;
+}
+
+function pickupDetourMinutes(candidateOrigin, requestedOrigin, destination) {
+  const directMiles = haversineMiles(candidateOrigin, destination);
+  const pickupMiles = haversineMiles(candidateOrigin, requestedOrigin);
+  const onwardMiles = haversineMiles(requestedOrigin, destination);
+  if ([directMiles, pickupMiles, onwardMiles].some((value) => value === null)) {
+    return null;
+  }
+  const addedRoadMiles = Math.max(0, (pickupMiles + onwardMiles - directMiles) * 1.18);
+  return Math.max(2, Math.round(addedRoadMiles * 2.25));
 }
 
 const syntheticFirstNames = [
@@ -153,6 +237,8 @@ export function findSyntheticMatches(criteria, viewerRole = "either", limit = 18
   if (!modeledViewer) return [];
 
   const requestedDays = new Set(criteria.days || []);
+  const requestedOrigin = viewerOrigin(criteria, modeledViewer);
+  const destination = airportDestinations[criteria.destination];
 
   return commuteMembers
     .filter((candidate) => candidate.synthetic_id !== modeledViewer.synthetic_id)
@@ -163,19 +249,34 @@ export function findSyntheticMatches(criteria, viewerRole = "either", limit = 18
         .filter((day) => requestedDays.has(day));
       const startDistance = timeDistance(candidate.shift_start_time, criteria.shiftStart);
       const endDistance = timeDistance(candidate.shift_end_time, criteria.shiftEnd);
-      const sameZip = candidate.home_zcta === criteria.homeZip;
-      const sameCounty = candidate.home_county === modeledViewer.home_county;
       const sameDestination = candidate.airport_destination === criteria.destination;
+      const candidateOrigin = syntheticOrigin(candidate);
+      const originDistance = haversineMiles(requestedOrigin, candidateOrigin);
+      const detourMinutes = pickupDetourMinutes(
+        candidateOrigin,
+        requestedOrigin,
+        destination
+      );
 
       if (!rolesAreCompatible(viewerRole, candidateRole)) return null;
       if (!sameDestination || commonDays.length < 2) return null;
       if (startDistance > 90 || endDistance > 90) return null;
+      if (originDistance === null || originDistance > 18) return null;
 
-      const geographyScore = sameZip ? 25 : sameCounty ? 14 : 4;
+      const geographyScore = proximityScore(originDistance);
+      const routeScore =
+        detourMinutes !== null && detourMinutes <= 5
+          ? 10
+          : detourMinutes !== null && detourMinutes <= 10
+            ? 7
+            : detourMinutes !== null && detourMinutes <= 15
+              ? 4
+              : 0;
       const score = Math.min(
         99,
         20 +
           geographyScore +
+          routeScore +
           timeScore(startDistance, 18) +
           timeScore(endDistance, 14) +
           Math.min(commonDays.length * 4, 18) +
@@ -190,10 +291,8 @@ export function findSyntheticMatches(criteria, viewerRole = "either", limit = 18
         role: candidateRole,
         score,
         commonDays,
-        sameZip,
-        sameCounty,
-        homeZip: candidate.home_zcta,
-        homeCounty: candidate.home_county,
+        originDistanceMiles: Number(originDistance.toFixed(1)),
+        pickupDetourMinutes: detourMinutes,
         airportDestination: candidate.airport_destination,
         shiftStart: candidate.shift_start_time,
         shiftEnd: candidate.shift_end_time,

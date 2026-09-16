@@ -30,6 +30,10 @@ preferences stored with each member's private profile.
 Run `202609150003_member_name_fields.sql` to store first name and last initial
 separately while generating a privacy-safe public display name.
 
+Run `202609160004_private_origin_zones.sql` to add the rounded origin-zone
+fields used for anonymous proximity matching. The migration does not add an
+address column; raw street addresses are never stored in Supabase.
+
 ## 3. Configure the local app
 
 Copy `.env.example` to `.env.local`, then enter the browser-safe values from
@@ -45,8 +49,14 @@ variable. Vite variables are included in browser code.
 
 Restart `npm run dev` after changing environment variables.
 
-## 4. Current boundary
+## 4. Private origin matching
 
-This commit provides the schema and secure client service. The existing form
-continues using local prototype storage until the next sprint adds sign-in and
-switches submissions to `saveTransportationInterest()`.
+The production app sends a starting point to the same-origin Vercel function at
+`/api/geocode-origin`. That function uses the U.S. Census Geocoder, rounds the
+result to two decimal places (approximately a 0.7-mile zone around Atlanta),
+and returns only the rounded zone. The original address is not written to the
+application database or browser session storage.
+
+Signed-in transportation interests save only the rounded latitude, rounded
+longitude, zone label and stated precision. Existing row-level security keeps
+those values private to the member.

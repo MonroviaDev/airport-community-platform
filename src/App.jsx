@@ -20,6 +20,7 @@ import {
 } from "./lib/commutePlanner";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { loadMyMemberProfile, saveMyMemberProfile } from "./lib/memberProfiles";
+import { createPrivateOriginZone } from "./lib/privateOrigins";
 import {
   closeMyTransportationInterest,
   loadMyTransportationInterest,
@@ -251,17 +252,18 @@ function PlanMyCommute() {
   const [demoId, setDemoId] = useState("");
   const [showSamples, setShowSamples] = useState(false);
   const [planError, setPlanError] = useState("");
+  const [planning, setPlanning] = useState(false);
   const selectedDemo = commuteMembers.find(
     (member) => member.synthetic_id === demoId
   );
 
-  function plan(event) {
+  async function plan(event) {
     event.preventDefault();
     setPlanError("");
     const form = new FormData(event.currentTarget);
     const criteria = {
       syntheticId: demoId,
-      homeZip: form.get("homeZip"),
+      homeZip: demoId ? form.get("homeZip") : "",
       destination: form.get("destination"),
       shiftStart: form.get("shiftStart"),
       shiftEnd: form.get("shiftEnd"),
@@ -271,6 +273,26 @@ function PlanMyCommute() {
     if (!criteria.days.length) {
       setPlanError("Select at least one normal workday.");
       return;
+    }
+
+    if (!demoId) {
+      setPlanning(true);
+      try {
+        const privateOrigin = await createPrivateOriginZone(
+          form.get("originAddress")
+        );
+        if (!privateOrigin.matchedZip) {
+          throw new Error(
+            "We located that starting point but could not confirm its ZIP code. Try a complete street address."
+          );
+        }
+        criteria.originZone = privateOrigin.originZone;
+        criteria.homeZip = privateOrigin.matchedZip;
+      } catch (originError) {
+        setPlanError(originError.message);
+        setPlanning(false);
+        return;
+      }
     }
 
     const member = findMember(criteria);
@@ -301,18 +323,49 @@ function PlanMyCommute() {
 
       <div className="planner-layout">
         <form className="flow-card commute-form" key={demoId} onSubmit={plan}>
+          {!demoId && (
+            <>
+              <label>
+                Private commute starting point
+                <input
+                  name="originAddress"
+                  autoComplete="street-address"
+                  placeholder="Street address or nearby public place, city, state, ZIP"
+                  minLength="8"
+                  maxLength="200"
+                  required
+                />
+                <small className="field-help">
+                  Used once to create an anonymous matching zone. The address
+                  itself is not saved by Airport Community.
+                </small>
+              </label>
+
+              <div className="location-privacy compact-privacy private-origin-note">
+                <strong>🔒 Converted, rounded and discarded.</strong>
+                <p>
+                  The U.S. Census Geocoder converts this starting point to
+                  coordinates. We round it to an approximately 0.7-mile zone
+                  and retain only that zone for matching.
+                </p>
+              </div>
+            </>
+          )}
+
           <div className="form-row">
-            <label>
-              Home ZIP code
-              <input
-                name="homeZip"
-                inputMode="numeric"
-                pattern="[0-9]{5}"
-                defaultValue={formProfile.home_zcta || ""}
-                placeholder="Example: 30265"
-                required
-              />
-            </label>
+            {demoId && (
+              <label>
+                Synthetic home ZIP code
+                <input
+                  name="homeZip"
+                  inputMode="numeric"
+                  pattern="[0-9]{5}"
+                  defaultValue={formProfile.home_zcta || ""}
+                  required
+                  readOnly
+                />
+              </label>
+            )}
 
             <label>
               Airport work area
@@ -367,10 +420,15 @@ function PlanMyCommute() {
             </div>
           </fieldset>
 
-          <div className="location-privacy compact-privacy">
-            <strong>🔒 ZIP-level planning protects your privacy.</strong>
-            <p>Exact addresses are not needed for this early commute analysis.</p>
-          </div>
+          {demoId && (
+            <div className="location-privacy compact-privacy">
+              <strong>🔒 Synthetic origin zone</strong>
+              <p>
+                This test persona uses a generated starting point rather than
+                a real employee address.
+              </p>
+            </div>
+          )}
 
           {planError && (
             <div className="auth-message error" role="alert">
@@ -378,8 +436,8 @@ function PlanMyCommute() {
             </div>
           )}
 
-          <button className="continue-button" type="submit">
-            Compare My Commute Options →
+          <button className="continue-button" type="submit" disabled={planning}>
+            {planning ? "Creating Private Match Zone…" : "Compare My Commute Options →"}
           </button>
 
           <div className="sample-commute">
@@ -742,6 +800,7 @@ function TransportationInterest({ session, authReady }) {
       modelMemberId: member.synthetic_id,
       homeZip: savedPlan.criteria.homeZip,
       homeCounty: member.home_county,
+      originZone: savedPlan.criteria.originZone || null,
       airportDestination: savedPlan.criteria.destination,
       shiftStart: savedPlan.criteria.shiftStart,
       shiftEnd: savedPlan.criteria.shiftEnd,
@@ -903,6 +962,12 @@ function TransportationInterest({ session, authReady }) {
               <dt>Workdays</dt>
               <dd>{displayDays(savedPlan.criteria.days)}</dd>
             </div>
+            <div>
+              <dt>Private origin</dt>
+              <dd>
+                {savedPlan.criteria.originZone?.label || "Synthetic demo zone"}
+              </dd>
+            </div>
           </dl>
           <Link to="/plan-my-commute">Change commute details</Link>
         </aside>
@@ -977,6 +1042,10 @@ function InterestConfirmed() {
           <div>
             <small>INTEREST</small>
             <strong>{modeLabels[interest.sharedMode]}</strong>
+          </div>
+          <div>
+            <small>PRIVATE ORIGIN</small>
+            <strong>{interest.originZone?.label || "Rounded commute zone"}</strong>
           </div>
         </div>
 
@@ -1131,6 +1200,12 @@ function MyTransportationInterest({ session, authReady }) {
             <dd>{interest.home_zip} → {interest.airport_destination}</dd>
           </div>
           <div>
+            <dt>Private origin</dt>
+            <dd>
+              {interest.origin_zone_label || "Add by planning your commute again"}
+            </dd>
+          </div>
+          <div>
             <dt>Shift</dt>
             <dd>{displayTime(interest.shift_start)}–{displayTime(interest.shift_end)}</dd>
           </div>
@@ -1154,8 +1229,9 @@ function MyTransportationInterest({ session, authReady }) {
 
         <div className="prototype-storage-note">
           <strong>Private by default:</strong> This page is available only to
-          your signed-in account. Closing an interest removes it from future
-          active matching without deleting your account.
+          your signed-in account. The original address is not stored; only the
+          rounded commute zone appears here. Closing an interest removes it
+          from future active matching without deleting your account.
         </div>
 
         {error && (
@@ -1887,15 +1963,17 @@ function RideMatches() {
       <h1>{matches.length} modeled commutes may fit yours.</h1>
 
       <p className="page-intro">
-        Results are ranked across all 6,521 synthetic members using ZIP-level
-        geography, airport destination, shift times and common workdays.
+        Results are ranked across all 6,521 synthetic members using anonymous
+        origin-zone proximity, estimated pickup detour, airport destination,
+        shift times and common workdays.
       </p>
 
       <div className="synthetic-data-notice">
         <strong>Test data only</strong>
         <span>
           These generated names and commute profiles do not represent real
-          people, registered accounts or currently available rides.
+          people, registered accounts or currently available rides. Detour
+          minutes are planning estimates, not turn-by-turn driving routes.
         </span>
       </div>
 
@@ -1937,11 +2015,10 @@ function lookingForLabel(role) {
 }
 
 function MatchCard({ match }) {
-  const proximity = match.sameZip
-    ? `Same ZIP-code commute area (${match.homeZip})`
-    : match.sameCounty
-      ? `Same county commute area (${match.homeCounty.replace(" County, GA", "")})`
-      : `${match.homeCounty.replace(" County, GA", "")} commute corridor`;
+  const proximity = `Origin zones approximately ${match.originDistanceMiles} mi apart`;
+  const detour = match.pickupDetourMinutes
+    ? `Estimated pickup detour: ${match.pickupDetourMinutes} min`
+    : "Pickup detour estimate unavailable";
 
   return (
     <div className="match-card v2-match">
@@ -1968,6 +2045,7 @@ function MatchCard({ match }) {
 
         <div className="match-facts">
           <span>📍 {proximity}</span>
+          <span>🚗 {detour}</span>
           <span>✈️ {match.airportDestination}</span>
           <span>🕒 {displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</span>
           <span>📅 {displayDays(match.commonDays)}</span>
@@ -2006,11 +2084,7 @@ function MatchProfile() {
     );
   }
 
-  const proximity = match.sameZip
-    ? `Same ZIP-code commute area (${match.homeZip})`
-    : match.sameCounty
-      ? `Same county commute area (${match.homeCounty.replace(" County, GA", "")})`
-      : `${match.homeCounty.replace(" County, GA", "")} commute corridor`;
+  const proximity = `Private origin zones are approximately ${match.originDistanceMiles} miles apart`;
 
   return (
     <main className="page match-profile-page">
@@ -2050,6 +2124,9 @@ function MatchProfile() {
 
             <ul>
               <li>{proximity}</li>
+              <li>
+                Estimated pickup detour: {match.pickupDetourMinutes || "—"} minutes
+              </li>
               <li>Shift runs {displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</li>
               <li>Same airport work area: {match.airportDestination}</li>
               <li>{match.commonDays.length} common modeled workdays</li>
@@ -2074,8 +2151,8 @@ function MatchProfile() {
           </div>
 
           <div>
-            <small>HOME AREA</small>
-            <strong>{match.homeZip} · {match.homeCounty.replace(" County, GA", "")}</strong>
+            <small>PRIVATE ORIGIN MATCH</small>
+            <strong>{match.originDistanceMiles} mi between anonymous zones</strong>
           </div>
 
           <div>
@@ -2090,10 +2167,11 @@ function MatchProfile() {
         </div>
 
         <div className="route-privacy-box">
-          <strong>🔒 ZIP-level testing</strong>
+          <strong>🔒 Anonymous origin-zone testing</strong>
           <p>
-            The model compares commute areas, not exact home addresses. It does
-            not contact anyone or create a real ride request.
+            The model compares rounded geographic zones, not exact home
+            addresses. Detour time is an early planning estimate; the model
+            does not contact anyone or create a real ride request.
           </p>
         </div>
 

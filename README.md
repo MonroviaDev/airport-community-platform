@@ -33,6 +33,7 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Match a custom modeled ZIP, airport destination, shift and workday pattern.
 - Rank MARTA, Xpress + MARTA and carpool/vanpool options.
 - Rank up to 18 compatible modeled shared commutes across all 6,521 synthetic members.
+- Convert a real starting point into an anonymous origin zone for proximity and pickup-detour scoring.
 - Display modeled inbound and return trips and explain transit schedule gaps.
 - Connect eligible ZIP/shift combinations to privacy-safe vanpool opportunity clusters.
 - Carry commute details into a shared-transportation interest flow for riders and potential drivers.
@@ -50,6 +51,12 @@ remain future integrations.
 All modeled match names and roles are generated test data. They do not
 represent real employees, registered accounts or available rides. The app
 labels both the list and profile views accordingly.
+
+Private origin matching uses a Vercel serverless function and the U.S. Census
+Geocoder. The app rounds returned coordinates to an approximately 0.7-mile
+zone, discards the submitted address, and stores only the rounded zone when a
+signed-in member joins the transportation-interest list. Synthetic members use
+stable generated origin points around public ZIP-code centroids.
 
 ## Vercel deployment
 
