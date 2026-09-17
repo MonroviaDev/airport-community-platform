@@ -54,10 +54,10 @@ function saveCachedRoute(key, route) {
   }
 }
 
-function mapPointElement(letter, className, title) {
+function mapPointElement(symbol, className, title) {
   const element = document.createElement("div");
   element.className = `route-map-marker ${className}`;
-  element.textContent = letter;
+  element.textContent = symbol;
   element.title = title;
   element.setAttribute("aria-label", title);
   return element;
@@ -65,12 +65,17 @@ function mapPointElement(letter, className, title) {
 
 export default function CommuteRouteMap({ match }) {
   const mapContainer = useRef(null);
+  const mapInstance = useRef(null);
   const key = useMemo(() => cacheKey(match), [match]);
   const initialRoute = useMemo(() => readCachedRoute(key), [key]);
   const [route, setRoute] = useState(initialRoute);
   const [status, setStatus] = useState(initialRoute ? "ready" : "loading");
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+  const [expanded, setExpanded] = useState(false);
+  const driverLabel = match.routeDriverType === "viewer"
+    ? "You are modeled as the driver"
+    : `${match.name} is modeled as the driver`;
 
   useEffect(() => {
     const cached = readCachedRoute(key);
@@ -119,6 +124,25 @@ export default function CommuteRouteMap({ match }) {
   }
 
   useEffect(() => {
+    if (!expanded) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setExpanded(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [expanded]);
+
+  useEffect(() => {
+    const resizeFrame = requestAnimationFrame(() => mapInstance.current?.resize());
+    return () => cancelAnimationFrame(resizeFrame);
+  }, [expanded]);
+
+  useEffect(() => {
     if (!mapContainer.current) return undefined;
 
     const map = new maplibregl.Map({
@@ -128,11 +152,12 @@ export default function CommuteRouteMap({ match }) {
       zoom: 9,
       attributionControl: true,
     });
+    mapInstance.current = map;
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
     const markers = [
       new maplibregl.Marker({
-        element: mapPointElement("D", "driver-marker", "Approximate driver area"),
+        element: mapPointElement("🚙", "driver-marker", "Approximate driver area"),
       })
         .setLngLat([
           match.routeDriverOrigin.longitude,
@@ -140,7 +165,7 @@ export default function CommuteRouteMap({ match }) {
         ])
         .addTo(map),
       new maplibregl.Marker({
-        element: mapPointElement("P", "pickup-marker", "Approximate pickup area"),
+        element: mapPointElement("👤", "pickup-marker", "Approximate pickup area"),
       })
         .setLngLat([
           match.routePickupOrigin.longitude,
@@ -148,7 +173,7 @@ export default function CommuteRouteMap({ match }) {
         ])
         .addTo(map),
       new maplibregl.Marker({
-        element: mapPointElement("A", "airport-marker", "Airport work area"),
+        element: mapPointElement("✈", "airport-marker", "Airport work area"),
       })
         .setLngLat([
           match.routeDestination.longitude,
@@ -211,8 +236,8 @@ export default function CommuteRouteMap({ match }) {
           source: "direct-route",
           paint: {
             "line-color": "#6f7f91",
-            "line-width": 5,
-            "line-opacity": 0.55,
+            "line-width": 3,
+            "line-opacity": 0.72,
             "line-dasharray": [2, 2],
           },
         });
@@ -221,13 +246,23 @@ export default function CommuteRouteMap({ match }) {
           data: { type: "Feature", properties: {}, geometry: route.viaPickup.geometry },
         });
         map.addLayer({
+          id: "pickup-route-casing",
+          type: "line",
+          source: "pickup-route",
+          paint: {
+            "line-color": "#ffffff",
+            "line-width": 9,
+            "line-opacity": 0.9,
+          },
+        });
+        map.addLayer({
           id: "pickup-route-line",
           type: "line",
           source: "pickup-route",
           paint: {
             "line-color": "#1769e0",
-            "line-width": 5,
-            "line-opacity": 0.88,
+            "line-width": 6,
+            "line-opacity": 0.94,
           },
         });
       }
@@ -243,6 +278,7 @@ export default function CommuteRouteMap({ match }) {
     });
 
     return () => {
+      mapInstance.current = null;
       markers.forEach((marker) => marker.remove());
       map.remove();
     };
@@ -258,11 +294,25 @@ export default function CommuteRouteMap({ match }) {
         <span className="route-no-traffic">Live traffic not included</span>
       </div>
 
-      <div className="route-map-wrap">
+      <div className={`route-map-wrap${expanded ? " expanded" : ""}`}>
         <div ref={mapContainer} className="route-map" />
+        <button
+          type="button"
+          className="route-expand-button"
+          aria-pressed={expanded}
+          onClick={() => setExpanded((current) => !current)}
+        >
+          <span aria-hidden="true">{expanded ? "×" : "⛶"}</span>
+          {expanded ? "Close map" : "Expand map"}
+        </button>
+        <div className="route-driver-callout">
+          <span aria-hidden="true">🚙</span>
+          <strong>{driverLabel}</strong>
+        </div>
         <div className="route-map-legend" aria-label="Map legend">
           <span><i className="legend-driver" />Driver area</span>
           <span><i className="legend-pickup" />Pickup area</span>
+          <span><i className="legend-normal-route" />Normal route</span>
           <span><i className="legend-route" />Route via pickup</span>
         </div>
       </div>
@@ -293,7 +343,7 @@ export default function CommuteRouteMap({ match }) {
             <strong>{route.viaPickup.minutes} min · {route.viaPickup.miles} mi</strong>
           </div>
           <div className="route-detour-result">
-            <small>MODELED ROAD DETOUR</small>
+            <small>ESTIMATED ROAD-ROUTE DETOUR</small>
             <strong>+{route.detour.minutes} min · +{route.detour.miles} mi</strong>
           </div>
         </div>
