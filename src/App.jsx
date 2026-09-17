@@ -6,7 +6,7 @@ import {
   useNavigate,
   useParams,
 } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
 import {
   commuteMembers,
@@ -29,6 +29,8 @@ import {
   loadMyTransportationInterest,
   saveTransportationInterest,
 } from "./lib/transportationInterests";
+
+const CommuteRouteMap = lazy(() => import("./components/CommuteRouteMap"));
 
 const destinations = [
   "Domestic Terminal",
@@ -2101,16 +2103,16 @@ function RideMatches() {
 
       <p className="page-intro">
         Results are ranked across all 6,521 synthetic members using anonymous
-        origin-zone proximity, estimated pickup detour, airport destination,
-        shift times and common workdays.
+        origin-zone proximity, likely route alignment, airport destination,
+        shift times and common workdays. Open a match to compare road routes.
       </p>
 
       <div className="synthetic-data-notice">
         <strong>Test data only</strong>
         <span>
           These generated names and commute profiles do not represent real
-          people, registered accounts or currently available rides. Detour
-          minutes are planning estimates, not turn-by-turn driving routes.
+          people, registered accounts or currently available rides. Road-route
+          previews use anonymous commute zones and do not include live traffic.
         </span>
       </div>
 
@@ -2153,9 +2155,6 @@ function lookingForLabel(role) {
 
 function MatchCard({ match }) {
   const proximity = `Origin zones approximately ${match.originDistanceMiles} mi apart`;
-  const detour = match.pickupDetourMinutes
-    ? `Estimated pickup detour: ${match.pickupDetourMinutes} min`
-    : "Pickup detour estimate unavailable";
 
   return (
     <div className="match-card v2-match">
@@ -2182,7 +2181,7 @@ function MatchCard({ match }) {
 
         <div className="match-facts">
           <span>📍 {proximity}</span>
-          <span>🚗 {detour}</span>
+          <span>🗺️ Road-route preview available</span>
           <span>✈️ {match.airportDestination}</span>
           <span>🕒 {displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</span>
           <span>📅 {displayDays(match.commonDays)}</span>
@@ -2190,7 +2189,7 @@ function MatchCard({ match }) {
       </div>
 
       <Link className="primary-button" to={`/match/${match.id}`}>
-        View Model
+        View Route
       </Link>
     </div>
   );
@@ -2222,6 +2221,9 @@ function MatchProfile() {
   }
 
   const proximity = `Private origin zones are approximately ${match.originDistanceMiles} miles apart`;
+  const driverDescription = match.routeDriverType === "viewer"
+    ? "You are modeled as the driver for this route comparison."
+    : `${match.name} is modeled as the driver for this route comparison.`;
 
   return (
     <main className="page match-profile-page">
@@ -2261,15 +2263,23 @@ function MatchProfile() {
 
             <ul>
               <li>{proximity}</li>
-              <li>
-                Estimated pickup detour: {match.pickupDetourMinutes || "—"} minutes
-              </li>
+              <li>{driverDescription}</li>
               <li>Shift runs {displayTime(match.shiftStart)}–{displayTime(match.shiftEnd)}</li>
               <li>Same airport work area: {match.airportDestination}</li>
               <li>{match.commonDays.length} common modeled workdays</li>
             </ul>
           </div>
         </div>
+
+        <Suspense
+          fallback={
+            <div className="route-status" role="status">
+              Loading the road-route preview…
+            </div>
+          }
+        >
+          <CommuteRouteMap key={match.id} match={match} />
+        </Suspense>
 
         <div className="driver-details-grid">
           <div>
@@ -2307,8 +2317,9 @@ function MatchProfile() {
           <strong>🔒 Anonymous origin-zone testing</strong>
           <p>
             The model compares rounded geographic zones, not exact home
-            addresses. Detour time is an early planning estimate; the model
-            does not contact anyone or create a real ride request.
+            addresses. The road preview compares a normal route with a route
+            through the pickup zone. It does not contact anyone or create a
+            real ride request.
           </p>
         </div>
 

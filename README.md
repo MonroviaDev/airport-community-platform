@@ -33,6 +33,8 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Match a custom modeled ZIP, airport destination, shift and workday pattern.
 - Rank MARTA, Xpress + MARTA and carpool/vanpool options.
 - Rank up to 18 compatible modeled shared commutes across all 6,521 synthetic members.
+- Open a selected match on an interactive map and compare the driver's normal
+  road route with a route through the anonymous pickup zone.
 - Convert a real starting point into an anonymous origin zone for proximity and pickup-detour scoring.
 - Suggest official Census/TIGER street names after a member enters a modeled Georgia ZIP code.
 - Display modeled inbound and return trips and explain transit schedule gaps.
@@ -62,6 +64,17 @@ the rounded zone when a signed-in member joins the transportation-interest
 list. The actual address is never shown to another user. Synthetic members use
 stable generated origin points around public ZIP-code centroids.
 
+Selected modeled matches use MapLibre with OpenFreeMap/OpenStreetMap map data.
+The `/api/route-detour` function asks the public OSRM demo router for a normal
+driver-to-airport route and a driver-to-pickup-to-airport route, then reports
+the difference in road miles and minutes. Only rounded anonymous zone
+coordinates are submitted. Results are cached in the member's browser for
+seven days, live traffic is not included, and the geometric model still
+performs the initial 6,521-member screening so the routing service is called
+only for a match someone opens. The public router is appropriate for this demo
+but has no production SLA; a managed or self-hosted routing provider should be
+selected before a high-volume launch.
+
 `npm run build:census-streets` refreshes the generated street index from the
 current configured TIGER release. It requires `curl` and `unzip`; the generated
 index is committed so production does not download TIGER files at runtime.
@@ -76,6 +89,9 @@ these environment variables for Production, Preview and Development:
 VITE_SUPABASE_URL=your-project-url
 VITE_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
+
+The default public OpenFreeMap style needs no key. To use a different
+MapLibre-compatible style, optionally set `VITE_MAP_STYLE_URL` and redeploy.
 
 After the first deployment, add the production Vercel URL to Supabase Auth
 redirect URLs before testing passwordless sign-in on the hosted app.

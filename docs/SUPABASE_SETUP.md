@@ -67,3 +67,16 @@ Signed-in transportation interests save only the rounded latitude, rounded
 longitude, zone label and stated precision. Existing row-level security keeps
 those values private to the member. Other users see commute compatibility and
 approximate zone distance, never the actual address.
+
+## 5. Anonymous road-route previews
+
+Opening a modeled match loads an interactive MapLibre map. The map displays
+rounded driver and pickup areas rather than house pins. The same-origin
+`/api/route-detour` function rounds submitted points again before comparing a
+normal airport route with a route through the pickup zone. The returned road
+route is cached in that browser for seven days; it is not written to Supabase.
+
+No additional migration or environment variable is required for the demo.
+OpenFreeMap supplies the default key-free map style, and the public OSRM demo
+router supplies non-traffic route geometry. Both can be replaced later without
+changing the stored member-origin data.

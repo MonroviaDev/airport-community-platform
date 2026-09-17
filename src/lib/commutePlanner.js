@@ -175,6 +175,68 @@ function pickupDetourMinutes(candidateOrigin, requestedOrigin, destination) {
   return Math.max(2, Math.round(addedRoadMiles * 2.25));
 }
 
+function routeOrientation(viewerRole, candidateRole, requestedOrigin, candidateOrigin, destination) {
+  const viewerDrives =
+    viewerRole === "driver" ||
+    (viewerRole === "either" && candidateRole === "rider");
+  const candidateDrives =
+    viewerRole === "rider" ||
+    (viewerRole === "either" && candidateRole === "driver");
+
+  if (viewerDrives) {
+    return {
+      driverOrigin: requestedOrigin,
+      pickupOrigin: candidateOrigin,
+      driverType: "viewer",
+      modeledDetourMinutes: pickupDetourMinutes(
+        requestedOrigin,
+        candidateOrigin,
+        destination
+      ),
+    };
+  }
+
+  if (candidateDrives) {
+    return {
+      driverOrigin: candidateOrigin,
+      pickupOrigin: requestedOrigin,
+      driverType: "match",
+      modeledDetourMinutes: pickupDetourMinutes(
+        candidateOrigin,
+        requestedOrigin,
+        destination
+      ),
+    };
+  }
+
+  const viewerDetour = pickupDetourMinutes(
+    requestedOrigin,
+    candidateOrigin,
+    destination
+  );
+  const candidateDetour = pickupDetourMinutes(
+    candidateOrigin,
+    requestedOrigin,
+    destination
+  );
+  const useViewer = viewerDetour !== null &&
+    (candidateDetour === null || viewerDetour <= candidateDetour);
+
+  return useViewer
+    ? {
+        driverOrigin: requestedOrigin,
+        pickupOrigin: candidateOrigin,
+        driverType: "viewer",
+        modeledDetourMinutes: viewerDetour,
+      }
+    : {
+        driverOrigin: candidateOrigin,
+        pickupOrigin: requestedOrigin,
+        driverType: "match",
+        modeledDetourMinutes: candidateDetour,
+      };
+}
+
 const syntheticFirstNames = [
   "Aaliyah", "Amina", "Andre", "Carlos", "Chandra", "Darius", "Denise",
   "Elijah", "Fatima", "Grace", "Hector", "Imani", "Jamal", "Keisha",
@@ -252,11 +314,14 @@ export function findSyntheticMatches(criteria, viewerRole = "either", limit = 18
       const sameDestination = candidate.airport_destination === criteria.destination;
       const candidateOrigin = syntheticOrigin(candidate);
       const originDistance = haversineMiles(requestedOrigin, candidateOrigin);
-      const detourMinutes = pickupDetourMinutes(
-        candidateOrigin,
+      const route = routeOrientation(
+        viewerRole,
+        candidateRole,
         requestedOrigin,
+        candidateOrigin,
         destination
       );
+      const detourMinutes = route.modeledDetourMinutes;
 
       if (!rolesAreCompatible(viewerRole, candidateRole)) return null;
       if (!sameDestination || commonDays.length < 2) return null;
@@ -293,6 +358,10 @@ export function findSyntheticMatches(criteria, viewerRole = "either", limit = 18
         commonDays,
         originDistanceMiles: Number(originDistance.toFixed(1)),
         pickupDetourMinutes: detourMinutes,
+        routeDriverOrigin: route.driverOrigin,
+        routePickupOrigin: route.pickupOrigin,
+        routeDestination: destination,
+        routeDriverType: route.driverType,
         airportDestination: candidate.airport_destination,
         shiftStart: candidate.shift_start_time,
         shiftEnd: candidate.shift_end_time,
