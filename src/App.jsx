@@ -12,6 +12,7 @@ import Marketplace from "./Marketplace";
 import Jobs from "./Jobs";
 import Housing from "./Housing";
 import Childcare from "./Childcare";
+import CommunityResources from "./CommunityResources";
 import {
   commuteMembers,
   demoProfiles,
@@ -158,13 +159,6 @@ function Home() {
             title="Jobs / Now Hiring"
             text="Discover opportunities throughout the airport community."
             link="/jobs"
-          />
-
-          <FeatureCard
-            icon="⭐"
-            title="Recognition / WOW"
-            text="Recognize people who make the airport community better."
-            link="/recognition"
           />
 
           <FeatureCard
