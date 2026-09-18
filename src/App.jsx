@@ -11,6 +11,7 @@ import "./App.css";
 import Marketplace from "./Marketplace";
 import Jobs from "./Jobs";
 import Housing from "./Housing";
+import Childcare from "./Childcare";
 import {
   commuteMembers,
   demoProfiles,
@@ -4647,15 +4648,7 @@ function App() {
         {/* Community modules */}
         <Route path="/marketplace" element={<Marketplace session={session} />} />
 
-        <Route
-          path="/childcare"
-          element={
-            <ComingSoon
-              title="Childcare"
-              description="Childcare resources designed around airport work schedules."
-            />
-          }
-        />
+        <Route path="/childcare" element={<Childcare session={session} />} />
 
         <Route path="/housing" element={<Housing session={session} />} />
 
