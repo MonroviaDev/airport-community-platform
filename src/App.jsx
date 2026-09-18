@@ -29,6 +29,11 @@ import {
   loadMyTransportationInterest,
   saveTransportationInterest,
 } from "./lib/transportationInterests";
+import { findMartaStation, martaStations } from "./lib/martaStations";
+import {
+  loadMyStationRideRequest,
+  saveStationRideRequest,
+} from "./lib/stationRideRequests";
 
 const CommuteRouteMap = lazy(() => import("./components/CommuteRouteMap"));
 
@@ -235,6 +240,17 @@ function Transportation() {
             Discover recurring transportation demand near your home and shift.
           </p>
           <span>Check my area →</span>
+        </Link>
+
+        <Link className="transport-card skip-bus-card" to="/skip-the-bus">
+          <span className="transport-icon">🚆🚗</span>
+          <span className="available">AVAILABLE NOW</span>
+          <h2>Skip the Bus</h2>
+          <p>
+            Take MARTA from the airport, then share the last mile home with a
+            coworker or split a rideshare.
+          </p>
+          <span>Plan my ride home →</span>
         </Link>
       </div>
 
@@ -774,6 +790,25 @@ function CommuteResults() {
         </Link>
       </div>
 
+      <div className="skip-bus-cta">
+        <div className="skip-bus-cta-icon">🚆</div>
+        <div>
+          <span className="eyebrow">MARTA + SHARED RIDE HOME</span>
+          <h2>Get off the train and skip the last bus.</h2>
+          <p>
+            Choose your MARTA station and expected arrival time, then record
+            whether you need a coworker ride, can drive, or want to split a
+            rideshare home.
+          </p>
+        </div>
+        <Link
+          className="primary-button"
+          to={isDemo ? "/plan-my-commute" : "/skip-the-bus"}
+        >
+          {isDemo ? "Enter My Real Commute" : "Plan My Ride Home"} →
+        </Link>
+      </div>
+
       <div className="prototype-note">
         <strong>
           {isDemo ? "Demo scenario: " : "Planning estimate: "}
@@ -827,6 +862,529 @@ function TripLeg({ label, trip }) {
         <strong>No complete trip</strong>
       )}
     </div>
+  );
+}
+
+function SkipBusChoice({ checked, icon, title, text, name, value, onChange }) {
+  return (
+    <label className="interest-choice">
+      <input
+        type="radio"
+        name={name}
+        value={value}
+        checked={checked}
+        onChange={() => onChange(value)}
+      />
+      <span className="interest-choice-content">
+        <b className="interest-choice-icon">{icon}</b>
+        <strong>{title}</strong>
+        <small>{text}</small>
+      </span>
+    </label>
+  );
+}
+
+function SkipBusPlanner({ session, authReady }) {
+  const navigate = useNavigate();
+  const savedPlan = readSessionObject("airportCommutePlan");
+  const criteria = savedPlan.criteria || {};
+  const isDemo =
+    savedPlan.mode === "demo" || Boolean(savedPlan.criteria?.syntheticId);
+  const hasPrivateOrigin =
+    !isDemo &&
+    criteria.homeZip &&
+    criteria.originZone?.latitude != null &&
+    criteria.originZone?.longitude != null;
+  const [stationNodeCode, setStationNodeCode] = useState("");
+  const [stationArrivalTime, setStationArrivalTime] = useState("");
+  const [arrivalFlexMinutes, setArrivalFlexMinutes] = useState("15");
+  const [workDays, setWorkDays] = useState(criteria.days || []);
+  const [lastMileMode, setLastMileMode] = useState("either");
+  const [rideRole, setRideRole] = useState("rider");
+  const [seatsAvailable, setSeatsAvailable] = useState("2");
+  const [maxWaitMinutes, setMaxWaitMinutes] = useState("15");
+  const [loadingSaved, setLoadingSaved] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    if (!session || !hasPrivateOrigin) {
+      return () => {
+        active = false;
+      };
+    }
+
+    loadMyStationRideRequest()
+      .then((request) => {
+        if (!active || !request) return;
+        setStationNodeCode(request.station_node_code);
+        setStationArrivalTime(request.station_arrival_time?.slice(0, 5) || "");
+        setArrivalFlexMinutes(String(request.arrival_flex_minutes));
+        setWorkDays(request.work_days || []);
+        setLastMileMode(request.last_mile_mode);
+        setRideRole(request.ride_role);
+        setSeatsAvailable(String(request.seats_available || 2));
+        setMaxWaitMinutes(String(request.max_wait_minutes));
+      })
+      .catch((loadError) => {
+        if (active) setError(loadError.message);
+      })
+      .finally(() => {
+        if (active) setLoadingSaved(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [session, hasPrivateOrigin]);
+
+  function changeLastMileMode(value) {
+    setLastMileMode(value);
+    if (value === "rideshare_split") setRideRole("rider");
+  }
+
+  function toggleDay(day) {
+    setWorkDays((current) =>
+      current.includes(day)
+        ? current.filter((currentDay) => currentDay !== day)
+        : [...current, day]
+    );
+  }
+
+  async function saveRequest(event) {
+    event.preventDefault();
+    setError("");
+
+    if (!workDays.length) {
+      setError("Select at least one normal workday.");
+      return;
+    }
+
+    const station = findMartaStation(stationNodeCode);
+    if (!station) {
+      setError("Choose the MARTA station where your shared trip home begins.");
+      return;
+    }
+
+    setSaving(true);
+    const request = {
+      homeZip: criteria.homeZip,
+      originZone: criteria.originZone,
+      airportDestination: criteria.destination,
+      shiftEnd: criteria.shiftEnd,
+      station,
+      stationArrivalTime,
+      arrivalFlexMinutes,
+      workDays,
+      lastMileMode,
+      rideRole: lastMileMode === "rideshare_split" ? "rider" : rideRole,
+      seatsAvailable,
+      maxWaitMinutes,
+    };
+
+    try {
+      await saveStationRideRequest(request);
+      sessionStorage.setItem(
+        "latestStationRideRequest",
+        JSON.stringify(request)
+      );
+      navigate("/skip-the-bus-confirmed");
+    } catch (saveError) {
+      setError(saveError.message);
+      setSaving(false);
+    }
+  }
+
+  if (!hasPrivateOrigin) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SKIP THE BUS</span>
+          <h1>Start with your real commute.</h1>
+          <p className="flow-intro">
+            We need your private, rounded home area and work schedule before
+            planning a shared ride from a MARTA station. Demo profiles cannot
+            be saved to the live member list.
+          </p>
+          <Link className="primary-button" to="/plan-my-commute">
+            Plan My Commute
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  if (!authReady || (session && loadingSaved)) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card" aria-live="polite">
+          <span className="eyebrow">SKIP THE BUS</span>
+          <h1>Loading your station ride plan…</h1>
+        </div>
+      </main>
+    );
+  }
+
+  if (!session) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SKIP THE BUS</span>
+          <h1>Sign in to save your ride home.</h1>
+          <p className="flow-intro">
+            Your commute plan remains on this device. Sign in to store this
+            station request privately with your account.
+          </p>
+          <button
+            className="continue-button"
+            onClick={() => {
+              sessionStorage.setItem("airportAuthReturnTo", "/skip-the-bus");
+              navigate("/register");
+            }}
+          >
+            Sign In to Continue →
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page skip-bus-page">
+      <Link className="back-link" to="/commute-results">
+        ← Back to commute options
+      </Link>
+
+      <div className="skip-bus-heading">
+        <span className="eyebrow">SKIP THE BUS</span>
+        <h1>Share the last part of your ride home.</h1>
+        <p>
+          Ride MARTA from the airport, meet at a public station and finish the
+          trip with an airport coworker or a shared rideshare.
+        </p>
+      </div>
+
+      <div className="interest-layout skip-bus-layout">
+        <form className="flow-card interest-form" onSubmit={saveRequest}>
+          <div className="location-privacy skip-bus-privacy">
+            <strong>🔒 Your home remains anonymous.</strong>
+            <p>
+              Matching uses only the approximately 0.7-mile area created by
+              your commute plan. Your street address is never saved or shown.
+            </p>
+          </div>
+
+          <fieldset>
+            <legend>Where will your shared ride home begin?</legend>
+            <label>
+              MARTA exit station
+              <select
+                value={stationNodeCode}
+                onChange={(event) => setStationNodeCode(event.target.value)}
+                required
+              >
+                <option value="">Select a station</option>
+                {martaStations.map((station) => (
+                  <option key={station.nodeCode} value={station.nodeCode}>
+                    {station.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <div className="form-row">
+              <label>
+                Expected station arrival
+                <input
+                  type="time"
+                  value={stationArrivalTime}
+                  onChange={(event) => setStationArrivalTime(event.target.value)}
+                  required
+                />
+                <small className="field-help">
+                  Use the time you normally step off the train.
+                </small>
+              </label>
+              <label>
+                Arrival flexibility
+                <select
+                  value={arrivalFlexMinutes}
+                  onChange={(event) => setArrivalFlexMinutes(event.target.value)}
+                >
+                  {[5, 10, 15, 20, 30].map((minutes) => (
+                    <option key={minutes} value={minutes}>
+                      ± {minutes} minutes
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Which days should we match?</legend>
+            <div className="day-grid">
+              {["mon", "tue", "wed", "thu", "fri", "sat", "sun"].map((day) => (
+                <label className="day-choice" key={`skip-${day}`}>
+                  <input
+                    value={day}
+                    type="checkbox"
+                    checked={workDays.includes(day)}
+                    onChange={() => toggleDay(day)}
+                  />
+                  <span>{day.charAt(0).toUpperCase() + day.slice(1)}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>How would you like to get home?</legend>
+            <div className="interest-choice-grid three-up skip-bus-choices">
+              <SkipBusChoice
+                name="lastMileMode"
+                value="coworker_ride"
+                checked={lastMileMode === "coworker_ride"}
+                onChange={changeLastMileMode}
+                icon="🚗"
+                title="Coworker ride"
+                text="Ride with or drive another airport employee."
+              />
+              <SkipBusChoice
+                name="lastMileMode"
+                value="rideshare_split"
+                checked={lastMileMode === "rideshare_split"}
+                onChange={changeLastMileMode}
+                icon="📱"
+                title="Split a rideshare"
+                text="Find coworkers traveling in the same direction."
+              />
+              <SkipBusChoice
+                name="lastMileMode"
+                value="either"
+                checked={lastMileMode === "either"}
+                onChange={changeLastMileMode}
+                icon="✨"
+                title="Either works"
+                text="Show whichever practical option forms first."
+              />
+            </div>
+          </fieldset>
+
+          {lastMileMode !== "rideshare_split" && (
+            <fieldset>
+              <legend>What role works for you?</legend>
+              <div className="interest-choice-grid three-up skip-bus-choices">
+                <SkipBusChoice
+                  name="rideRole"
+                  value="rider"
+                  checked={rideRole === "rider"}
+                  onChange={setRideRole}
+                  icon="🙋"
+                  title="I need a ride"
+                  text="Meet a coworker driver at the station."
+                />
+                <SkipBusChoice
+                  name="rideRole"
+                  value="driver"
+                  checked={rideRole === "driver"}
+                  onChange={setRideRole}
+                  icon="🅿️"
+                  title="I can drive"
+                  text="Park at the station, then drive coworkers home."
+                />
+                <SkipBusChoice
+                  name="rideRole"
+                  value="either"
+                  checked={rideRole === "either"}
+                  onChange={setRideRole}
+                  icon="↔️"
+                  title="Either role"
+                  text="I can ride or drive depending on the match."
+                />
+              </div>
+            </fieldset>
+          )}
+
+          <div className="form-row">
+            {lastMileMode !== "rideshare_split" && rideRole !== "rider" && (
+              <label>
+                Seats available
+                <select
+                  value={seatsAvailable}
+                  onChange={(event) => setSeatsAvailable(event.target.value)}
+                >
+                  {[1, 2, 3, 4, 5, 6].map((seats) => (
+                    <option key={seats} value={seats}>
+                      {seats} seat{seats === 1 ? "" : "s"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label>
+              Maximum station wait
+              <select
+                value={maxWaitMinutes}
+                onChange={(event) => setMaxWaitMinutes(event.target.value)}
+              >
+                {[5, 10, 15, 20, 30].map((minutes) => (
+                  <option key={minutes} value={minutes}>
+                    {minutes} minutes
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <label className="interest-consent">
+            <input type="checkbox" required />
+            <span>
+              I understand this saves a matching request only. It does not
+              reserve a ride, charge a fare or commit anyone to drive.
+            </span>
+          </label>
+
+          {error && (
+            <div className="auth-message error" role="alert">
+              {error}
+            </div>
+          )}
+
+          <button className="continue-button" type="submit" disabled={saving}>
+            {saving ? "Saving securely…" : "Save My Station Ride Request →"}
+          </button>
+        </form>
+
+        <aside className="interest-summary-card skip-bus-summary">
+          <span className="eyebrow">YOUR RIDE HOME</span>
+          <h2>MARTA, then a shared last mile</h2>
+          <dl>
+            <div>
+              <dt>Airport work area</dt>
+              <dd>{criteria.destination}</dd>
+            </div>
+            <div>
+              <dt>Shift ends</dt>
+              <dd>{displayTime(criteria.shiftEnd)}</dd>
+            </div>
+            <div>
+              <dt>Workdays</dt>
+              <dd>{displayDays(workDays)}</dd>
+            </div>
+            <div>
+              <dt>Anonymous home area</dt>
+              <dd>{criteria.originZone.label}</dd>
+            </div>
+          </dl>
+          <div className="station-flow-preview" aria-label="Ride home steps">
+            <span>Airport</span>
+            <b>🚆</b>
+            <span>MARTA station</span>
+            <b>🚗</b>
+            <span>Home area</span>
+          </div>
+          <Link to="/plan-my-commute">Change commute details</Link>
+        </aside>
+      </div>
+    </main>
+  );
+}
+
+function SkipBusConfirmed() {
+  const request = readSessionObject("latestStationRideRequest");
+
+  if (!request.station?.name) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SKIP THE BUS</span>
+          <h1>No recent station request found.</h1>
+          <Link className="primary-button" to="/skip-the-bus">
+            Plan My Ride Home
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const modeLabels = {
+    coworker_ride: "Coworker ride",
+    rideshare_split: "Split a rideshare",
+    either: "Coworker ride or split rideshare",
+  };
+  const roleLabels = {
+    rider: "Needs a ride",
+    driver: `${request.seatsAvailable} seats available`,
+    either: `Can ride or drive · ${request.seatsAvailable} seats`,
+  };
+
+  return (
+    <main className="page flow-page interest-success-page">
+      <div className="success-card interest-success-card">
+        <div className="success-icon">✓</div>
+        <span className="eyebrow">STATION REQUEST SAVED</span>
+        <h1>Your ride home plan is ready for matching.</h1>
+        <p>
+          This is a request—not a confirmed ride. No coworker has been
+          contacted and no rideshare has been ordered.
+        </p>
+
+        <div className="interest-confirmation-summary skip-bus-confirmation">
+          <div>
+            <small>MEET AT</small>
+            <strong>{request.station.name}</strong>
+          </div>
+          <div>
+            <small>ARRIVAL WINDOW</small>
+            <strong>
+              {displayTime(request.stationArrivalTime)} ± {request.arrivalFlexMinutes} min
+            </strong>
+          </div>
+          <div>
+            <small>OPTION</small>
+            <strong>{modeLabels[request.lastMileMode]}</strong>
+          </div>
+          <div>
+            <small>ROLE</small>
+            <strong>{roleLabels[request.rideRole]}</strong>
+          </div>
+          <div>
+            <small>DAYS</small>
+            <strong>{displayDays(request.workDays)}</strong>
+          </div>
+          <div>
+            <small>HOME MATCH AREA</small>
+            <strong>{request.originZone.label}</strong>
+          </div>
+        </div>
+
+        <div className="prototype-storage-note">
+          <strong>Your exact address is not in this request.</strong> Matching
+          will compare the public station, arrival window, workdays and your
+          rounded home area.
+        </div>
+
+        <div className="next-step-box">
+          <strong>Coming in the next phase</strong>
+          <p>
+            Compatible station riders and drivers will appear on a route map.
+            Private chat will open only after both members accept a connection.
+          </p>
+        </div>
+
+        <div className="success-actions">
+          <Link className="primary-button" to="/transportation">
+            Transportation Home
+          </Link>
+          <Link className="secondary-button" to="/skip-the-bus">
+            Edit My Request
+          </Link>
+        </div>
+      </div>
+    </main>
   );
 }
 
@@ -1863,6 +2421,12 @@ function Account({ session, authReady, onSignOut }) {
           to="/my-transportation-interest"
         >
           Manage Transportation Interest
+        </Link>
+        <Link
+          className="secondary-button account-interest-link"
+          to="/skip-the-bus"
+        >
+          Manage Skip the Bus Request
         </Link>
         <button className="secondary-button auth-signout" onClick={onSignOut}>
           Sign Out
@@ -3735,6 +4299,14 @@ function App() {
         <Route path="/transportation" element={<Transportation />} />
         <Route path="/plan-my-commute" element={<PlanMyCommute />} />
         <Route path="/commute-results" element={<CommuteResults />} />
+        <Route
+          path="/skip-the-bus"
+          element={<SkipBusPlanner session={session} authReady={authReady} />}
+        />
+        <Route
+          path="/skip-the-bus-confirmed"
+          element={<SkipBusConfirmed />}
+        />
         <Route
           path="/transportation-interest"
           element={

@@ -34,6 +34,12 @@ Run `202609160004_private_origin_zones.sql` to add the rounded origin-zone
 fields used for anonymous proximity matching. The migration does not add an
 address column; raw street addresses are never stored in Supabase.
 
+Run `202609180005_station_last_mile_requests.sql` to add the secure **Skip the
+Bus** request table. It stores a member's public MARTA meeting station,
+station-arrival window, workdays and shared-ride preferences together with the
+same rounded home zone. Row-level security limits each member to their own
+request, and the table has no street-address field.
+
 ## 3. Configure the local app
 
 Copy `.env.example` to `.env.local`, then enter the browser-safe values from
@@ -68,7 +74,19 @@ longitude, zone label and stated precision. Existing row-level security keeps
 those values private to the member. Other users see commute compatibility and
 approximate zone distance, never the actual address.
 
-## 5. Anonymous road-route previews
+## 5. Skip the Bus requests
+
+The `/skip-the-bus` flow combines MARTA with a shared last mile home. A signed-in
+member chooses an exit station, expected station-arrival time, arrival
+flexibility, workdays and one of three modes: coworker ride, split rideshare or
+either. Coworker riders can say whether they need a ride, can drive from the
+station, or can do either.
+
+This first phase saves private matching requests only. It does not contact a
+coworker, order a rideshare or confirm a ride. Station matching, route maps and
+mutual-acceptance chat are separate follow-up phases.
+
+## 6. Anonymous road-route previews
 
 Opening a modeled match loads an interactive MapLibre map. The map displays
 rounded driver and pickup areas rather than house pins. The same-origin
