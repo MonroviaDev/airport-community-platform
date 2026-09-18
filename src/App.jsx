@@ -10,6 +10,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
 import Marketplace from "./Marketplace";
 import Jobs from "./Jobs";
+import Housing from "./Housing";
 import {
   commuteMembers,
   demoProfiles,
@@ -4656,15 +4657,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/housing"
-          element={
-            <ComingSoon
-              title="Housing & Rentals"
-              description="Housing, rentals and roommate opportunities connected to the airport community."
-            />
-          }
-        />
+        <Route path="/housing" element={<Housing session={session} />} />
 
         <Route path="/jobs" element={<Jobs session={session} />} />
 
