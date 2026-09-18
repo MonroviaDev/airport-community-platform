@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
+import Marketplace from "./Marketplace";
 import {
   commuteMembers,
   demoProfiles,
@@ -4642,15 +4643,7 @@ function App() {
         <Route path="/offer-sent" element={<OfferSent />} />
 
         {/* Community modules */}
-        <Route
-          path="/marketplace"
-          element={
-            <ComingSoon
-              title="Marketplace / Classifieds"
-              description="A trusted marketplace for the airport employee community."
-            />
-          }
-        />
+        <Route path="/marketplace" element={<Marketplace session={session} />} />
 
         <Route
           path="/childcare"
