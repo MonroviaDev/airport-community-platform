@@ -1,6 +1,7 @@
 import memberCsv from "../../data/synthetic-population-combined-transit-viability.csv?raw";
 import vanpoolCsv from "../../data/vanpool-opportunity-clusters.csv?raw";
 import geographyCsv from "../../data/atl-workforce-marta-accessibility.csv?raw";
+import { martaStations } from "./martaStations";
 
 function parseCsv(text) {
   const rows = [];
@@ -290,6 +291,337 @@ function commuteLabel(member) {
     return "Uses transit for part of the commute";
   }
   return "Usually drives or gets a ride";
+}
+
+function stationAccessBand(distance) {
+  if (distance <= 2.5) {
+    return { key: "strong", label: "Strong station fit", score: 18 };
+  }
+  if (distance <= 5) {
+    return { key: "standard", label: "Reasonable station fit", score: 13 };
+  }
+  if (distance <= 8) {
+    return { key: "park-and-ride", label: "Park-and-ride fit", score: 8 };
+  }
+  return null;
+}
+
+function nearestSyntheticStation(member) {
+  const origin = syntheticOrigin(member);
+  if (!origin) return null;
+
+  const nearest = martaStations
+    .map((station) => ({
+      station,
+      distance: haversineMiles(origin, station),
+    }))
+    .sort((first, second) => first.distance - second.distance)[0];
+  const band = nearest ? stationAccessBand(nearest.distance) : null;
+
+  if (!nearest || !band) return null;
+  return {
+    station: nearest.station,
+    distanceMiles: Number(nearest.distance.toFixed(1)),
+    band,
+    origin,
+  };
+}
+
+const eastWestStationCodes = new Set([
+  "MARTA-ASHBY",
+  "MARTA-AVONDALE",
+  "MARTA-BANKHEAD",
+  "MARTA-DECATUR",
+  "MARTA-DOME-GWCC-PHILIPS-ARENA-CNN",
+  "MARTA-EAST-LAKE",
+  "MARTA-EDGEWOOD-CANDLER-PARK",
+  "MARTA-FIVE-POINTS",
+  "MARTA-GEORGIA-STATE",
+  "MARTA-HAMILTON-E-HOLMES",
+  "MARTA-INDIAN-CREEK",
+  "MARTA-INMAN-PARK-REYNOLDSTOWN",
+  "MARTA-KENSINGTON",
+  "MARTA-KING-MEMORIAL",
+  "MARTA-VINE-CITY",
+  "MARTA-WEST-LAKE",
+]);
+
+function modeledStationArrival(member, station) {
+  const airport = airportDestinations["Domestic Terminal"];
+  const railMiles = haversineMiles(airport, station) || 0;
+  const transferMinutes = eastWestStationCodes.has(station.nodeCode) ? 8 : 0;
+  const railMinutes = Math.max(4, Math.round(3 + railMiles * 1.7 + transferMinutes));
+  const platformWait = 6 + (syntheticNumber(member) % 9);
+  const total = (minutes(member.shift_end_time) + platformWait + railMinutes) % 1440;
+  const hour = Math.floor(total / 60);
+  const minute = total % 60;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function bearingDegrees(from, to) {
+  const latitude1 = radians(from.latitude);
+  const latitude2 = radians(to.latitude);
+  const longitudeDelta = radians(to.longitude - from.longitude);
+  const y = Math.sin(longitudeDelta) * Math.cos(latitude2);
+  const x =
+    Math.cos(latitude1) * Math.sin(latitude2) -
+    Math.sin(latitude1) * Math.cos(latitude2) * Math.cos(longitudeDelta);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function bearingDifference(first, second) {
+  const difference = Math.abs(first - second);
+  return Math.min(difference, 360 - difference);
+}
+
+function directionLabel(bearing) {
+  const directions = ["north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"];
+  return directions[Math.round(bearing / 45) % directions.length];
+}
+
+function stationDropoffDetour(station, passengerHome, driverHome) {
+  const directMiles = haversineMiles(station, driverHome);
+  const passengerMiles = haversineMiles(station, passengerHome);
+  const onwardMiles = haversineMiles(passengerHome, driverHome);
+  if ([directMiles, passengerMiles, onwardMiles].some((value) => value === null)) {
+    return null;
+  }
+  return Math.max(1, Math.round(Math.max(0, passengerMiles + onwardMiles - directMiles) * 2.25));
+}
+
+function stationRouteOrientation(
+  request,
+  candidateRole,
+  candidateOrigin,
+  connectionType
+) {
+  const station = request.station;
+  const viewerOrigin = request.originZone;
+
+  if (connectionType === "rideshare_split") {
+    const viewerFirstDetour = stationDropoffDetour(
+      station,
+      viewerOrigin,
+      candidateOrigin
+    );
+    const candidateFirstDetour = stationDropoffDetour(
+      station,
+      candidateOrigin,
+      viewerOrigin
+    );
+    const viewerFirst = viewerFirstDetour !== null &&
+      (candidateFirstDetour === null || viewerFirstDetour <= candidateFirstDetour);
+    return viewerFirst
+      ? {
+          routeStation: station,
+          routeDropoffOrigin: viewerOrigin,
+          routeDriverHome: candidateOrigin,
+          routeDriverType: "rideshare",
+          modeledDetourMinutes: viewerFirstDetour,
+        }
+      : {
+          routeStation: station,
+          routeDropoffOrigin: candidateOrigin,
+          routeDriverHome: viewerOrigin,
+          routeDriverType: "rideshare",
+          modeledDetourMinutes: candidateFirstDetour,
+        };
+  }
+
+  const viewerDrives =
+    request.rideRole === "driver" ||
+    (request.rideRole === "either" && candidateRole === "rider");
+  const candidateDrives =
+    request.rideRole === "rider" ||
+    (request.rideRole === "either" && candidateRole === "driver");
+
+  if (viewerDrives) {
+    return {
+      routeStation: station,
+      routeDropoffOrigin: candidateOrigin,
+      routeDriverHome: viewerOrigin,
+      routeDriverType: "viewer",
+      modeledDetourMinutes: stationDropoffDetour(
+        station,
+        candidateOrigin,
+        viewerOrigin
+      ),
+    };
+  }
+
+  if (candidateDrives) {
+    return {
+      routeStation: station,
+      routeDropoffOrigin: viewerOrigin,
+      routeDriverHome: candidateOrigin,
+      routeDriverType: "match",
+      modeledDetourMinutes: stationDropoffDetour(
+        station,
+        viewerOrigin,
+        candidateOrigin
+      ),
+    };
+  }
+
+  const viewerDetour = stationDropoffDetour(
+    station,
+    candidateOrigin,
+    viewerOrigin
+  );
+  const candidateDetour = stationDropoffDetour(
+    station,
+    viewerOrigin,
+    candidateOrigin
+  );
+  const useViewer = viewerDetour !== null &&
+    (candidateDetour === null || viewerDetour <= candidateDetour);
+
+  return useViewer
+    ? {
+        routeStation: station,
+        routeDropoffOrigin: candidateOrigin,
+        routeDriverHome: viewerOrigin,
+        routeDriverType: "viewer",
+        modeledDetourMinutes: viewerDetour,
+      }
+    : {
+        routeStation: station,
+        routeDropoffOrigin: viewerOrigin,
+        routeDriverHome: candidateOrigin,
+        routeDriverType: "match",
+        modeledDetourMinutes: candidateDetour,
+      };
+}
+
+export function findStationRideMatches(request, limit = 18) {
+  if (!request?.station?.nodeCode || !request?.originZone || !request?.workDays) {
+    return [];
+  }
+
+  const requestedDays = new Set(request.workDays);
+  const viewerBearing = bearingDegrees(request.station, request.originZone);
+  const maximumArrivalDifference =
+    Number(request.arrivalFlexMinutes || 15) + Number(request.maxWaitMinutes || 15);
+
+  return commuteMembers
+    .map((candidate) => {
+      const assignment = nearestSyntheticStation(candidate);
+      if (!assignment || assignment.station.nodeCode !== request.station.nodeCode) {
+        return null;
+      }
+
+      const commonDays = candidate.work_days
+        .split("|")
+        .filter((day) => requestedDays.has(day));
+      if (commonDays.length < 2) return null;
+
+      const candidateArrivalTime = modeledStationArrival(
+        candidate,
+        assignment.station
+      );
+      const arrivalDifferenceMinutes = timeDistance(
+        candidateArrivalTime,
+        request.stationArrivalTime
+      );
+      if (arrivalDifferenceMinutes > maximumArrivalDifference) return null;
+
+      const candidateRole = syntheticRole(candidate);
+      const coworkerCompatible = rolesAreCompatible(
+        request.rideRole,
+        candidateRole
+      );
+      const connectionType =
+        request.lastMileMode === "rideshare_split" ||
+        (request.lastMileMode === "either" && !coworkerCompatible)
+          ? "rideshare_split"
+          : "coworker_ride";
+      if (
+        request.lastMileMode === "coworker_ride" &&
+        !coworkerCompatible
+      ) {
+        return null;
+      }
+
+      const homeDistance = haversineMiles(
+        request.originZone,
+        assignment.origin
+      );
+      if (homeDistance === null || homeDistance > 12) return null;
+
+      const candidateBearing = bearingDegrees(
+        assignment.station,
+        assignment.origin
+      );
+      const directionDifference = bearingDifference(
+        viewerBearing,
+        candidateBearing
+      );
+      if (directionDifference > 105) return null;
+
+      const route = stationRouteOrientation(
+        request,
+        candidateRole,
+        assignment.origin,
+        connectionType
+      );
+      const directionScore =
+        directionDifference <= 30
+          ? 16
+          : directionDifference <= 60
+            ? 11
+            : 5;
+      const arrivalScore =
+        arrivalDifferenceMinutes <= 5
+          ? 22
+          : arrivalDifferenceMinutes <= 15
+            ? 17
+            : arrivalDifferenceMinutes <= 30
+              ? 11
+              : 5;
+      const homeScore =
+        homeDistance <= 2.5 ? 12 : homeDistance <= 5 ? 9 : homeDistance <= 8 ? 5 : 2;
+      const score = Math.min(
+        99,
+        12 +
+          assignment.band.score +
+          arrivalScore +
+          directionScore +
+          homeScore +
+          Math.min(commonDays.length * 3, 15) +
+          (syntheticNumber(candidate) % 3)
+      );
+      const identity = syntheticIdentity(candidate);
+
+      return {
+        id: candidate.synthetic_id,
+        ...identity,
+        role: candidateRole,
+        connectionType,
+        score,
+        commonDays,
+        station: assignment.station,
+        stationAccessMiles: assignment.distanceMiles,
+        stationAccessBand: assignment.band.key,
+        stationAccessLabel: assignment.band.label,
+        stationArrivalTime: candidateArrivalTime,
+        arrivalDifferenceMinutes,
+        homeDistanceMiles: Number(homeDistance.toFixed(1)),
+        homeDirection: directionLabel(candidateBearing),
+        directionDifference: Math.round(directionDifference),
+        seatsAvailable: candidateRole === "rider" ? null : 1 + (syntheticNumber(candidate) % 4),
+        shiftEnd: candidate.shift_end_time,
+        modeledDetourMinutes: route.modeledDetourMinutes,
+        ...route,
+      };
+    })
+    .filter(Boolean)
+    .sort(
+      (first, second) =>
+        second.score - first.score ||
+        first.arrivalDifferenceMinutes - second.arrivalDifferenceMinutes ||
+        first.id.localeCompare(second.id)
+    )
+    .slice(0, limit);
 }
 
 export function findSyntheticMatches(criteria, viewerRole = "either", limit = 18) {

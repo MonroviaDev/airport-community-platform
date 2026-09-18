@@ -3576,3 +3576,87 @@ legend {
     grid-template-columns: 1fr;
   }
 }
+
+/* SKIP THE BUS MODELED MATCHES */
+
+.station-confirmation-home {
+  display: inline-block;
+  margin-top: 22px;
+}
+
+.station-match-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 24px 0 18px;
+}
+
+.station-match-summary div {
+  padding: 15px 17px;
+  border: 1px solid #d9e4ef;
+  border-radius: 11px;
+  background: white;
+}
+
+.station-match-summary small,
+.station-match-summary strong {
+  display: block;
+}
+
+.station-match-summary small {
+  margin-bottom: 5px;
+  color: #7e8da0;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.9px;
+}
+
+.station-match-summary strong {
+  color: #24415f;
+  font-size: 13px;
+}
+
+.station-match-card {
+  border-left: 5px solid #16845b;
+}
+
+.station-connection-status {
+  border: 1px solid #d7ebdf;
+  background: #f1f9f5;
+}
+
+.station-connection-status p:first-child {
+  color: #176b4c;
+}
+
+.station-marker {
+  background: #16845b;
+  font-size: 14px;
+}
+
+.legend-station {
+  background: #16845b;
+}
+
+.station-route-legend .legend-station {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+@media (max-width: 720px) {
+  .station-match-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .station-match-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .station-match-card .primary-button {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+  }
+}

@@ -82,9 +82,11 @@ flexibility, workdays and one of three modes: coworker ride, split rideshare or
 either. Coworker riders can say whether they need a ride, can drive from the
 station, or can do either.
 
-This first phase saves private matching requests only. It does not contact a
-coworker, order a rideshare or confirm a ride. Station matching, route maps and
-mutual-acceptance chat are separate follow-up phases.
+Saving a request does not contact a coworker, order a rideshare or confirm a
+ride. The demo can assign the 6,521 synthetic employees to nearby MARTA
+stations and show ranked station-to-home test routes. Synthetic profiles are
+not written to Supabase. Live mutual-acceptance matching and private chat are a
+separate follow-up phase.
 
 ## 6. Anonymous road-route previews
 

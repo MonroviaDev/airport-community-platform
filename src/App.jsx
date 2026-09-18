@@ -14,6 +14,7 @@ import {
   displayDays,
   displayTime,
   findMember,
+  findStationRideMatches,
   findSyntheticMatches,
   findVanpoolCluster,
   parseTripSummary,
@@ -36,6 +37,7 @@ import {
 } from "./lib/stationRideRequests";
 
 const CommuteRouteMap = lazy(() => import("./components/CommuteRouteMap"));
+const StationRideMap = lazy(() => import("./components/StationRideMap"));
 
 const destinations = [
   "Domestic Terminal",
@@ -1368,22 +1370,288 @@ function SkipBusConfirmed() {
         </div>
 
         <div className="next-step-box">
-          <strong>Coming in the next phase</strong>
+          <strong>Modeled station matches are ready</strong>
           <p>
-            Compatible station riders and drivers will appear on a route map.
-            Private chat will open only after both members accept a connection.
+            Test the matching and route-map experience with synthetic profiles.
+            Private member chat will come after mutual acceptance is built.
           </p>
         </div>
 
         <div className="success-actions">
-          <Link className="primary-button" to="/transportation">
-            Transportation Home
+          <Link className="primary-button" to="/skip-the-bus-matches">
+            View Modeled Station Matches
           </Link>
           <Link className="secondary-button" to="/skip-the-bus">
             Edit My Request
           </Link>
         </div>
+
+        <Link className="back-link station-confirmation-home" to="/transportation">
+          Transportation Home
+        </Link>
       </div>
+    </main>
+  );
+}
+
+function stationMatchRoleLabel(match) {
+  if (match.connectionType === "rideshare_split") {
+    return "MODELED RIDESHARE PARTNER";
+  }
+  if (match.role === "driver") return "MODELED STATION DRIVER";
+  if (match.role === "rider") return "MODELED STATION RIDER";
+  return "MODELED DRIVER OR RIDER";
+}
+
+function stationConnectionLabel(match) {
+  return match.connectionType === "rideshare_split"
+    ? "Split a rideshare from the station"
+    : "Share a coworker ride from the station";
+}
+
+function StationRideMatchCard({ match }) {
+  return (
+    <article className="match-card station-match-card">
+      <div className="avatar">{match.initials}</div>
+
+      <div className="match-main">
+        <div className="match-title">
+          <h2>{match.name}</h2>
+          <span className="role-badge">{stationMatchRoleLabel(match)}</span>
+        </div>
+
+        <div className="score-row">
+          <strong>{match.score}% STATION-RIDE FIT</strong>
+        </div>
+
+        <div className="commute-status station-connection-status">
+          <p><strong>{stationConnectionLabel(match)}</strong></p>
+          <p>
+            Travels {match.homeDirection} from {match.station.name} toward an
+            anonymous home area.
+          </p>
+        </div>
+
+        <div className="match-facts">
+          <span>🚆 {displayTime(match.stationArrivalTime)} modeled station arrival</span>
+          <span>📅 {displayDays(match.commonDays)}</span>
+          <span>📍 {match.stationAccessMiles} mi from modeled home to station</span>
+          <span>🧭 {match.homeDistanceMiles} mi between anonymous home areas</span>
+          <span>🚗 About {match.modeledDetourMinutes} min modeled drop-off detour</span>
+        </div>
+      </div>
+
+      <Link className="primary-button" to={`/skip-the-bus-match/${match.id}`}>
+        View Station Route
+      </Link>
+    </article>
+  );
+}
+
+function StationRideMatches() {
+  const request = readSessionObject("latestStationRideRequest");
+  const matches = findStationRideMatches(request, 18);
+
+  if (!request.station?.nodeCode) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SKIP THE BUS MATCHES</span>
+          <h1>Save a station request first.</h1>
+          <p className="flow-intro">
+            Choose your MARTA station, expected arrival time and ride-home
+            preference before opening modeled matches.
+          </p>
+          <Link className="primary-button" to="/skip-the-bus">
+            Plan My Ride Home
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="page modeled-matches-page station-matches-page">
+      <Link className="back-link" to="/skip-the-bus-confirmed">
+        ← Back to saved request
+      </Link>
+      <span className="eyebrow">SKIP THE BUS · SYNTHETIC TESTING</span>
+      <h1>{matches.length} modeled station riders may fit.</h1>
+      <p className="page-intro">
+        These results use {request.station.name}, your station-arrival window,
+        common workdays, compatible roles and anonymous home direction.
+      </p>
+
+      <div className="station-match-summary">
+        <div>
+          <small>MEETING STATION</small>
+          <strong>{request.station.name}</strong>
+        </div>
+        <div>
+          <small>YOUR ARRIVAL</small>
+          <strong>
+            {displayTime(request.stationArrivalTime)} ± {request.arrivalFlexMinutes} min
+          </strong>
+        </div>
+        <div>
+          <small>MATCHING DAYS</small>
+          <strong>{displayDays(request.workDays)}</strong>
+        </div>
+      </div>
+
+      <div className="synthetic-data-notice">
+        <strong>Test data only</strong>
+        <span>
+          Each synthetic employee is assigned to the nearest MARTA station:
+          0–2.5 miles is a strong fit, 2.5–5 miles is a reasonable fit and
+          5–8 miles is treated as park-and-ride access. These are not real people.
+        </span>
+      </div>
+
+      <div className="match-list">
+        {matches.map((match) => (
+          <StationRideMatchCard key={match.id} match={match} />
+        ))}
+      </div>
+
+      {!matches.length && (
+        <div className="prototype-note">
+          <strong>No modeled matches meet every current filter.</strong> Edit
+          the request and try a larger arrival-flexibility or maximum-wait window.
+        </div>
+      )}
+    </main>
+  );
+}
+
+function StationRideMatchProfile() {
+  const { id } = useParams();
+  const request = readSessionObject("latestStationRideRequest");
+  const match = findStationRideMatches(request, commuteMembers.length)
+    .find((candidate) => candidate.id === id);
+
+  if (!match) {
+    return (
+      <main className="page flow-page">
+        <div className="flow-card auth-flow-card">
+          <span className="eyebrow">SKIP THE BUS MATCH</span>
+          <h1>That modeled station match is unavailable.</h1>
+          <p className="flow-intro">
+            The saved station request may have changed. Return to the current
+            results and select another test profile.
+          </p>
+          <Link className="primary-button" to="/skip-the-bus-matches">
+            Return to Station Matches
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const driverDescription =
+    match.routeDriverType === "rideshare"
+      ? "A shared rideshare vehicle is modeled for this route."
+      : match.routeDriverType === "viewer"
+      ? "You are modeled as the driver from the station."
+      : `${match.name} is modeled as the driver from the station.`;
+
+  return (
+    <main className="page match-profile-page station-match-profile-page">
+      <Link className="back-link" to="/skip-the-bus-matches">
+        ← Back to station matches
+      </Link>
+
+      <section className="driver-profile-card">
+        <div className="driver-profile-top">
+          <div className="avatar large-avatar">{match.initials}</div>
+          <div className="driver-identity">
+            <span className="role-badge">{stationMatchRoleLabel(match)}</span>
+            <h1>{match.name}</h1>
+            <p className="rating">Synthetic profile · {match.id}</p>
+          </div>
+        </div>
+
+        <div className="synthetic-data-notice compact-notice">
+          <strong>Not a real person</strong>
+          <span>
+            This profile tests station, time, direction and road-route matching.
+          </span>
+        </div>
+
+        <div className="compatibility-heading">
+          <span className="eyebrow">STATION-RIDE COMPATIBILITY</span>
+          <h2>Why this modeled ride home fits</h2>
+        </div>
+
+        <div className="direction-match-grid single-model-result">
+          <div className="direction-match excellent">
+            <div className="direction-match-header">
+              <span>🚆 STATION-RIDE FIT</span>
+              <strong>{match.score}%</strong>
+            </div>
+            <h3>{stationConnectionLabel(match)}</h3>
+            <ul>
+              <li>Same meeting point: {match.station.name}</li>
+              <li>
+                Modeled arrival at {displayTime(match.stationArrivalTime)}, {match.arrivalDifferenceMinutes} minutes from yours
+              </li>
+              <li>{displayDays(match.commonDays)} workdays overlap</li>
+              <li>Both home areas travel generally {match.homeDirection} from the station</li>
+              <li>{driverDescription}</li>
+            </ul>
+          </div>
+        </div>
+
+        <Suspense
+          fallback={
+            <div className="route-status" role="status">
+              Loading the station-to-home route…
+            </div>
+          }
+        >
+          <StationRideMap key={match.id} match={match} />
+        </Suspense>
+
+        <div className="driver-details-grid">
+          <div>
+            <small>STATION ACCESS</small>
+            <strong>{match.stationAccessLabel} · {match.stationAccessMiles} mi</strong>
+          </div>
+          <div>
+            <small>MODELED ARRIVAL</small>
+            <strong>{displayTime(match.stationArrivalTime)}</strong>
+          </div>
+          <div>
+            <small>COMMON WORKDAYS</small>
+            <strong>{displayDays(match.commonDays)}</strong>
+          </div>
+          <div>
+            <small>HOME DIRECTION</small>
+            <strong>{match.homeDirection} from the station</strong>
+          </div>
+          <div>
+            <small>ANONYMOUS HOME AREAS</small>
+            <strong>{match.homeDistanceMiles} mi apart</strong>
+          </div>
+          <div>
+            <small>MODELED SHIFT ENDS</small>
+            <strong>{displayTime(match.shiftEnd)}</strong>
+          </div>
+        </div>
+
+        <div className="route-privacy-box">
+          <strong>🔒 Public station, private homes</strong>
+          <p>
+            The station marker is public. Both home markers represent rounded
+            anonymous zones, and the synthetic profile does not represent a
+            registered employee or available ride.
+          </p>
+        </div>
+
+        <Link className="continue-button modeled-return-button" to="/skip-the-bus-matches">
+          Compare Other Station Matches →
+        </Link>
+      </section>
     </main>
   );
 }
@@ -4306,6 +4574,14 @@ function App() {
         <Route
           path="/skip-the-bus-confirmed"
           element={<SkipBusConfirmed />}
+        />
+        <Route
+          path="/skip-the-bus-matches"
+          element={<StationRideMatches />}
+        />
+        <Route
+          path="/skip-the-bus-match/:id"
+          element={<StationRideMatchProfile />}
         />
         <Route
           path="/transportation-interest"

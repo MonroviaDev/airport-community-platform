@@ -42,6 +42,10 @@ The Transportation module includes a model-backed **Plan My Commute** prototype 
 - Carry commute details into a shared-transportation interest flow for riders and potential drivers.
 - Save a secure **Skip the Bus** request that combines MARTA with a coworker
   ride from the station or a split rideshare home.
+- Assign eligible synthetic employees to their nearest MARTA station using
+  2.5-mile, 5-mile and 8-mile access bands, then rank station-ride test matches.
+- Preview a modeled station-to-home route with public station and anonymous
+  home-area markers.
 
 Synthetic scenarios are isolated in a labeled Demo Mode and cannot be saved to
 the live member-interest table. For signed-in members, the app saves the
@@ -55,8 +59,10 @@ integration.
 
 The Skip the Bus planner uses the same anonymous origin zone, then adds a
 public MARTA station, station-arrival window, workdays, last-mile preference
-and rider/driver role. It records matching interest only; live station matches,
-mutual acceptance and private chat are planned next.
+and rider/driver role. The synthetic test lab ranks same-station profiles by
+arrival time, shared workdays, role compatibility and home direction. These
+profiles are not registered members; live mutual acceptance and private chat
+are planned next.
 
 All modeled match names and roles are generated test data. They do not
 represent real employees, registered accounts or available rides. The app
