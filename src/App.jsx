@@ -36,6 +36,7 @@ import {
   saveTransportationInterest,
 } from "./lib/transportationInterests";
 import { findMartaStation, martaStations } from "./lib/martaStations";
+import { airportWorkDestinations } from "./lib/airportLocations";
 import {
   loadMyStationRideRequest,
   saveStationRideRequest,
@@ -44,16 +45,7 @@ import {
 const CommuteRouteMap = lazy(() => import("./components/CommuteRouteMap"));
 const StationRideMap = lazy(() => import("./components/StationRideMap"));
 
-const destinations = [
-  "Domestic Terminal",
-  "International Terminal",
-  "Delta TechOps",
-  "Delta G.O.",
-  "North Cargo Area",
-  "South Cargo Area",
-  "Rental Car Center",
-  "Other Airport Area",
-];
+const destinations = airportWorkDestinations;
 
 function readSessionObject(key) {
   try {
