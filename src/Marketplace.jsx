@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import "./Marketplace.css";
+import { airportMeetupAreas } from "./lib/airportLocations";
 
 const seedListings = [
   { id:"m1", title:"Samsung 43-inch Smart TV", price:120, category:"Electronics", area:"Domestic Terminal", seller:"Marcus J.", age:"2h", icon:"📺", description:"Works well. Upgraded to a larger TV. Can meet before or after shift." },
-  { id:"m2", title:"Airport-approved lunch cooler", price:15, category:"For Sale", area:"Airport Station", seller:"Tanya R.", age:"5h", icon:"🧊", description:"Clean insulated cooler, good for long shifts." },
+  { id:"m2", title:"Airport-approved lunch cooler", price:15, category:"For Sale", area:"Airport MARTA Station", seller:"Tanya R.", age:"5h", icon:"🧊", description:"Clean insulated cooler, good for long shifts." },
   { id:"m3", title:"Twin bed frame", price:0, category:"Free", area:"College Park Station", seller:"David M.", age:"1d", icon:"🛏️", description:"Free metal twin frame. Pickup or airport meetup by arrangement." },
   { id:"m4", title:"Noise-canceling headphones", price:45, category:"Electronics", area:"International Terminal", seller:"Keisha B.", age:"1d", icon:"🎧", description:"Bluetooth headphones in good condition with charging cable." },
   { id:"m5", title:"Looking for small microwave", price:null, category:"Wanted", area:"Domestic Terminal", seller:"Andre S.", age:"2d", icon:"🔎", description:"Looking for an inexpensive countertop microwave in working condition." },
@@ -12,7 +13,7 @@ const seedListings = [
 ];
 
 const categories=["All","For Sale","Free","Wanted","Electronics","Furniture / Home","Clothing / Uniforms","Auto","Tickets / Other"];
-const meetupAreas=["Domestic Terminal","International Terminal","Airport Station","College Park Station","Employee Lot","Other"];
+const meetupAreas=airportMeetupAreas;
 
 function readMine(){
   try { return JSON.parse(localStorage.getItem("airportMarketplaceListings") || "[]"); }
