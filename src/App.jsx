@@ -2561,11 +2561,17 @@ function Register({ session, authReady }) {
   }
 
   if (session) {
-    const returnTo = sessionStorage.getItem("airportAuthReturnTo") || "/profile";
+    const returnTo = sessionStorage.getItem("airportAuthReturnTo") || "/account";
     const continueLabel =
       returnTo === "/transportation-interest"
         ? "Continue to Transportation Interest →"
-        : "Continue to My Profile →";
+        : returnTo === "/skip-the-bus"
+          ? "Continue to Skip the Bus →"
+          : returnTo === "/driver-profile"
+            ? "Continue to Driver Profile →"
+            : returnTo === "/profile"
+              ? "Continue to My Profile →"
+              : "Continue →";
 
     return (
       <main className="page flow-page">
@@ -2599,12 +2605,13 @@ function Register({ session, authReady }) {
   return (
     <main className="page flow-page">
       <form className="flow-card auth-flow-card" onSubmit={sendMagicLink}>
-        <span className="eyebrow">SECURE EMPLOYEE ACCOUNT</span>
-        <h1>Sign in without a password.</h1>
+        <span className="eyebrow">AIRPORT COMMUNITY ACCOUNT</span>
+        <h1>Sign in only when you need to.</h1>
 
         <p className="flow-intro">
-          Enter your email and we’ll send you a secure, one-time sign-in link.
-          New members can use the same process to create an account.
+          Browsing Airport Community does not require an account. Sign in when
+          you want to save, post, message or connect with another member.
+          Enter your email and we’ll send one secure sign-in link.
         </p>
 
         <label>
@@ -3822,52 +3829,18 @@ function RiderPreview() {
 function DriverRegister() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    sessionStorage.setItem("airportAuthReturnTo", "/driver-profile");
+    navigate("/register", { replace: true });
+  }, [navigate]);
+
   return (
     <main className="page flow-page">
-      <div className="flow-card">
+      <div className="flow-card auth-flow-card">
         <span className="eyebrow">REVEAL POTENTIAL RIDERS</span>
-
-        <h1>Create your free account.</h1>
-
+        <h1>Opening secure sign-in…</h1>
         <p className="flow-intro">
-          Your commute and ride preferences are already saved. You won't have
-          to enter them again.
-        </p>
-
-        <button
-          className="social-button"
-          onClick={() => navigate("/driver-profile")}
-        >
-          <span>G</span> Continue with Google
-        </button>
-
-        <button
-          className="social-button"
-          onClick={() => navigate("/driver-profile")}
-        >
-          <span>f</span> Continue with Facebook
-        </button>
-
-        <button
-          className="social-button"
-          onClick={() => navigate("/driver-profile")}
-        >
-          <span>●</span> Continue with Apple
-        </button>
-
-        <div className="divider">
-          <span>or</span>
-        </div>
-
-        <button
-          className="email-button"
-          onClick={() => navigate("/driver-profile")}
-        >
-          Sign up with email
-        </button>
-
-        <p className="privacy-note">
-          Demo registration only. Social sign-in will be connected later.
+          Your commute and ride preferences stay saved while you sign in.
         </p>
       </div>
     </main>
