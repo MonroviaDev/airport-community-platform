@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./Housing.css";
+import { residentialAreas } from "./lib/residentialAreas";
 
 const seed=[
 {id:"h1",title:"Room for rent near College Park",price:750,type:"Room for Rent",area:"College Park",commute:"10–15 min to ATL",available:"Available now",icon:"🛏️",poster:"Airport employee",description:"Private furnished room in a shared home. Utilities included. Convenient to Airport Station and the Domestic Terminal."},
@@ -10,7 +11,7 @@ const seed=[
 {id:"h6",title:"Need a room near the airport",price:800,type:"Housing Wanted",area:"Airport Area",commute:"Prefer under 20 min",available:"By Nov 1",icon:"🔎",poster:"Airport employee",description:"Full-time airport employee looking for a room or roommate arrangement with a manageable commute to ATL."}
 ];
 const types=["All housing","Room for Rent","Apartment","Roommate Wanted","Housing Wanted"];
-const areas=["All areas","College Park","Hapeville","East Point","Union City","Airport Area","Forest Park","Riverdale","South Fulton"];
+const areas=["All areas",...residentialAreas];
 function readMine(){try{return JSON.parse(localStorage.getItem("airportHousingListings")||"[]")}catch{return[]}}
 
 export default function Housing({ session }){
