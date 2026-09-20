@@ -47,3 +47,10 @@ export async function sendConversationMessage(conversationId, body) {
   if (error) throw error;
   return data;
 }
+
+export async function loadConversationInbox() {
+  const c = client();
+  const { data, error } = await c.rpc("my_conversation_inbox");
+  if (error) throw error;
+  return (data || []).map(row => ({ ...row, unread_count: Number(row.unread_count || 0) }));
+}
