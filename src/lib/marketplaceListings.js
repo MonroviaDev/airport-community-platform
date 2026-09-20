@@ -33,7 +33,13 @@ export async function loadMarketplaceListings() {
   const userId = authData?.user?.id || null;
   const { data, error } = await c.rpc("marketplace_feed");
   if (error) throw error;
-  return (data || []).map((row) => toListing(row, userId));
+  return (data || []).map((row) => {
+    const images = (row.images || []).map((image) => {
+      const { data: publicData } = c.storage.from("marketplace-images").getPublicUrl(image.path);
+      return { ...image, url: publicData.publicUrl };
+    });
+    return toListing({ ...row, images }, userId);
+  });
 }
 
 export async function createMarketplaceListing(input) {
