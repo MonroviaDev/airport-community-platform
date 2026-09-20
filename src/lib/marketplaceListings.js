@@ -1,4 +1,5 @@
 import { isSupabaseConfigured, supabase } from "./supabase";
+import { compressMarketplaceImage } from "./marketplaceImages";
 
 function client() {
   if (!isSupabaseConfigured || !supabase) {
@@ -22,6 +23,7 @@ function toListing(row, currentUserId) {
     icon: "📦",
     status: row.status,
     mine: row.user_id === currentUserId,
+    images: row.images || [],
   };
 }
 
@@ -65,4 +67,46 @@ export async function markMarketplaceListingSold(id) {
   const c = client();
   const { error } = await c.from("marketplace_listings").update({ status: "sold", updated_at: new Date().toISOString() }).eq("id", id);
   if (error) throw error;
+}
+
+
+export async function uploadMarketplaceImages(listingId, files) {
+  if (!files?.length) return [];
+  const c = client();
+  const { data: authData, error: authError } = await c.auth.getUser();
+  if (authError) throw authError;
+  const user = authData?.user;
+  if (!user) throw new Error("Sign in before uploading photos.");
+
+  const uploaded = [];
+  try {
+    for (let i = 0; i < files.length; i += 1) {
+      const blob = await compressMarketplaceImage(files[i]);
+      const path = `${user.id}/${listingId}/${crypto.randomUUID()}.webp`;
+      const { error: storageError } = await c.storage.from("marketplace-images").upload(path, blob, {
+        contentType: "image/webp",
+        cacheControl: "3600",
+        upsert: false,
+      });
+      if (storageError) throw storageError;
+
+      const { error: recordError } = await c.from("marketplace_listing_images").insert({
+        listing_id: listingId,
+        user_id: user.id,
+        storage_path: path,
+        sort_order: i,
+      });
+      if (recordError) throw recordError;
+
+      const { data: publicData } = c.storage.from("marketplace-images").getPublicUrl(path);
+      uploaded.push({ path, url: publicData.publicUrl, sortOrder: i });
+    }
+    return uploaded;
+  } catch (error) {
+    await Promise.all(uploaded.map(async (image) => {
+      await c.storage.from("marketplace-images").remove([image.path]);
+      await c.from("marketplace_listing_images").delete().eq("storage_path", image.path);
+    }));
+    throw error;
+  }
 }
