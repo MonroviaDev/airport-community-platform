@@ -14,6 +14,7 @@ import Housing from "./Housing";
 import Childcare from "./Childcare";
 import CommunityResources from "./CommunityResources";
 import Conversation from "./components/Conversation";
+import MessagesInbox from "./components/MessagesInbox";
 import {
   commuteMembers,
   demoProfiles,
@@ -72,6 +73,7 @@ function Header({ session }) {
         <Link to="/transportation">Transportation</Link>
         <Link to="/marketplace">Marketplace</Link>
         <Link to="/community">Resources</Link>
+        {session && <Link to="/messages">Messages</Link>}
       </nav>
 
       <Link className="signin-button" to={session ? "/account" : "/register"}>
@@ -4607,6 +4609,7 @@ function App() {
 
         {/* Community modules */}
         <Route path="/marketplace" element={<Marketplace session={session} />} />
+        <Route path="/messages" element={<MessagesInbox session={session} authReady={authReady} />} />
         <Route path="/messages/:id" element={<Conversation session={session} authReady={authReady} />} />
 
         <Route path="/childcare" element={<Childcare session={session} />} />
