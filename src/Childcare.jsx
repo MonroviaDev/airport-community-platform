@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./Childcare.css";
+import { residentialAreas } from "./lib/residentialAreas";
 
 const seed=[
 {id:"c1",name:"Early Start Childcare",type:"Childcare Provider",area:"College Park",hours:"4:30 AM–8:00 PM",schedule:["Early morning","Day"],ages:"6 weeks–12 years",rate:"From $185/week",verified:false,icon:"🌅",description:"Extended weekday hours designed for parents who need care before traditional centers open. Airport-area location with early drop-off."},
@@ -11,7 +12,7 @@ const seed=[
 ];
 const schedules=["All schedules","Early morning","Day","Evening","Overnight","Weekend"];
 const types=["All options","Childcare Provider","Individual Caregiver","Care Exchange","Care Needed"];
-const areas=["All areas","College Park","East Point","Hapeville","South Fulton","Airport Area","Forest Park","Riverdale","Union City"];
+const areas=["All areas",...residentialAreas];
 function readMine(){try{return JSON.parse(localStorage.getItem("airportChildcareListings")||"[]")}catch{return[]}}
 
 export default function Childcare({ session }){
