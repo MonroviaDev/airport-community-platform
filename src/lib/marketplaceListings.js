@@ -17,7 +17,7 @@ function toListing(row, currentUserId) {
     category: row.category,
     price: listingType === "Free" ? 0 : listingType === "Wanted" ? null : row.price == null ? 0 : Number(row.price),
     area: row.meetup_location,
-    seller: row.user_id === currentUserId ? "My listing" : "Airport community member",
+    seller: row.seller_display_name || (row.user_id === currentUserId ? "My listing" : "Airport community member"),
     age: "Community listing",
     icon: "📦",
     status: row.status,
@@ -29,10 +29,7 @@ export async function loadMarketplaceListings() {
   const c = client();
   const { data: authData } = await c.auth.getUser();
   const userId = authData?.user?.id || null;
-  const { data, error } = await c
-    .from("marketplace_listings")
-    .select("id,user_id,title,description,category,listing_type,price,meetup_location,status,created_at")
-    .order("created_at", { ascending: false });
+  const { data, error } = await c.rpc("marketplace_feed");
   if (error) throw error;
   return (data || []).map((row) => toListing(row, userId));
 }
