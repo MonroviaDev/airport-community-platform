@@ -13,6 +13,7 @@ import Jobs from "./Jobs";
 import Housing from "./Housing";
 import Childcare from "./Childcare";
 import CommunityResources from "./CommunityResources";
+import Conversation from "./components/Conversation";
 import {
   commuteMembers,
   demoProfiles,
@@ -4606,6 +4607,7 @@ function App() {
 
         {/* Community modules */}
         <Route path="/marketplace" element={<Marketplace session={session} />} />
+        <Route path="/messages/:id" element={<Conversation session={session} authReady={authReady} />} />
 
         <Route path="/childcare" element={<Childcare session={session} />} />
 
