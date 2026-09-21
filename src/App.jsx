@@ -102,7 +102,7 @@ function Header({ session }) {
       </nav>
 
       <div className="header-actions">
-        {session && <Link className="messages-button" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}><span className="messages-icon" aria-hidden="true">💬</span>{unreadMessages > 0 && <span className="unread-dot" aria-hidden="true" />}<span className="messages-label">Messages</span></Link>}
+        {session && <Link className="messages-button" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}><span className="messages-icon" aria-hidden="true"><span className="messages-envelope" /></span>{unreadMessages > 0 && <span className="unread-dot" aria-hidden="true" />}<span className="messages-label">Messages</span></Link>}
         <Link className="signin-button" to={session ? "/account" : "/register"}>
           {session ? "My Account" : "Sign In"}
         </Link>
