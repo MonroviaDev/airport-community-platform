@@ -28,6 +28,7 @@ import {
 } from "./lib/commutePlanner";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import { loadMyMemberProfile, saveMyMemberProfile } from "./lib/memberProfiles";
+import { loadUnreadMessageCount } from "./lib/communityMessaging";
 import {
   createPrivateOriginZone,
   loadStreetSuggestions,
@@ -58,6 +59,31 @@ function readSessionObject(key) {
 }
 
 function Header({ session }) {
+  const [unreadMessages, setUnreadMessages] = useState(0);
+
+  useEffect(() => {
+    if (!session) {
+      setUnreadMessages(0);
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnread = () => {
+      loadUnreadMessageCount()
+        .then(count => { if (active) setUnreadMessages(count); })
+        .catch(() => { if (active) setUnreadMessages(0); });
+    };
+
+    refreshUnread();
+    window.addEventListener("airport-messages-read", refreshUnread);
+    window.addEventListener("focus", refreshUnread);
+    return () => {
+      active = false;
+      window.removeEventListener("airport-messages-read", refreshUnread);
+      window.removeEventListener("focus", refreshUnread);
+    };
+  }, [session]);
+
   return (
     <header>
       <Link className="brand" to="/">
@@ -76,7 +102,7 @@ function Header({ session }) {
       </nav>
 
       <div className="header-actions">
-        {session && <Link className="messages-button" to="/messages" aria-label="Messages">💬 <span>Messages</span></Link>}
+        {session && <Link className="messages-button" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}><span className="messages-icon" aria-hidden="true">💬</span>{unreadMessages > 0 && <span className="unread-dot" aria-hidden="true" />}<span className="messages-label">Messages</span></Link>}
         <Link className="signin-button" to={session ? "/account" : "/register"}>
           {session ? "My Account" : "Sign In"}
         </Link>
