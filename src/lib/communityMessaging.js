@@ -54,3 +54,14 @@ export async function loadConversationInbox() {
   if (error) throw error;
   return (data || []).map(row => ({ ...row, unread_count: Number(row.unread_count || 0) }));
 }
+
+export async function markConversationRead(conversationId) {
+  const c = client();
+  const { error } = await c.rpc("mark_conversation_read", { conversation_uuid: conversationId });
+  if (error) throw error;
+}
+
+export async function loadUnreadMessageCount() {
+  const rows = await loadConversationInbox();
+  return rows.reduce((total, row) => total + Number(row.unread_count || 0), 0);
+}
