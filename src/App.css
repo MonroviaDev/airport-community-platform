@@ -100,6 +100,9 @@ nav a:hover {
   color: #1473e6;
 }
 
+
+.header-actions{display:flex;align-items:center;gap:10px}.messages-button{display:inline-flex;align-items:center;gap:6px;padding:9px 12px;border-radius:9px;color:#17345f;font-weight:700;font-size:14px}.messages-button:hover{background:#edf5ff;color:#1473e6}.mobile-menu{display:none;position:relative}.mobile-menu summary{display:grid;width:40px;height:40px;place-items:center;border:1px solid #ccd5e2;border-radius:9px;color:#17345f;font-size:20px;cursor:pointer;list-style:none}.mobile-menu summary::-webkit-details-marker{display:none}.mobile-menu-panel{position:absolute;top:48px;right:0;display:grid;min-width:210px;padding:8px;border:1px solid #dfe5ed;border-radius:12px;background:white;box-shadow:0 14px 35px rgba(22,52,93,.14)}.mobile-menu-panel a{padding:12px 14px;border-radius:8px;color:#30445f;font-weight:700}.mobile-menu-panel a:hover{background:#edf5ff;color:#1473e6}
+
 /* HOME HERO */
 
 .hero {
@@ -427,8 +430,14 @@ nav a:hover {
   }
 
   header {
-    padding: 0 20px;
+    padding: 0 14px;
   }
+
+  .mobile-menu{display:block}
+  .brand small{display:none}
+  .messages-button span{display:none}
+  .messages-button{padding:9px}
+  .header-actions>.signin-button{display:none}
 
   .card-grid,
   .transport-grid {
