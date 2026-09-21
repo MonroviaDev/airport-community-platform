@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { loadConversation, sendConversationMessage } from "../lib/communityMessaging";
+import { loadConversation, markConversationRead, sendConversationMessage } from "../lib/communityMessaging";
 import "./Conversation.css";
 
 export default function Conversation({ session, authReady }) {
@@ -18,7 +18,15 @@ export default function Conversation({ session, authReady }) {
       navigate("/register",{replace:true});
       return;
     }
-    loadConversation(id).then(setData).catch(err=>setError(err.message||"Unable to load this conversation."));
+    loadConversation(id).then(async result=>{
+      setData(result);
+      try {
+        await markConversationRead(id);
+        window.dispatchEvent(new Event("airport-messages-read"));
+      } catch (readError) {
+        console.error("Unable to mark conversation read", readError);
+      }
+    }).catch(err=>setError(err.message||"Unable to load this conversation."));
   },[id,session,authReady,navigate]);
 
   async function submit(e){
