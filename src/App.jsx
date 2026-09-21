@@ -73,12 +73,25 @@ function Header({ session }) {
         <Link to="/transportation">Transportation</Link>
         <Link to="/marketplace">Marketplace</Link>
         <Link to="/community">Resources</Link>
-        {session && <Link to="/messages">Messages</Link>}
       </nav>
 
-      <Link className="signin-button" to={session ? "/account" : "/register"}>
-        {session ? "My Account" : "Sign In"}
-      </Link>
+      <div className="header-actions">
+        {session && <Link className="messages-button" to="/messages" aria-label="Messages">💬 <span>Messages</span></Link>}
+        <Link className="signin-button" to={session ? "/account" : "/register"}>
+          {session ? "My Account" : "Sign In"}
+        </Link>
+        <details className="mobile-menu">
+          <summary aria-label="Open navigation menu">☰</summary>
+          <div className="mobile-menu-panel">
+            <Link to="/">Home</Link>
+            <Link to="/transportation">Transportation</Link>
+            <Link to="/marketplace">Marketplace</Link>
+            <Link to="/community">Resources</Link>
+            {session && <Link to="/messages">Messages</Link>}
+            <Link to={session ? "/account" : "/register"}>{session ? "My Account" : "Sign In"}</Link>
+          </div>
+        </details>
+      </div>
     </header>
   );
 }
