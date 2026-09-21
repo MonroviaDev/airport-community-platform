@@ -60,6 +60,7 @@ function readSessionObject(key) {
 
 function Header({ session }) {
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!session) {
@@ -106,17 +107,27 @@ function Header({ session }) {
         <Link className="signin-button" to={session ? "/account" : "/register"}>
           {session ? "My Account" : "Sign In"}
         </Link>
-        <details className="mobile-menu">
-          <summary aria-label="Open navigation menu">☰</summary>
-          <div className="mobile-menu-panel">
-            <Link to="/">Home</Link>
-            <Link to="/transportation">Transportation</Link>
-            <Link to="/marketplace">Marketplace</Link>
-            <Link to="/community">Resources</Link>
-            {session && <Link to="/messages">Messages</Link>}
-            <Link to={session ? "/account" : "/register"}>{session ? "My Account" : "Sign In"}</Link>
-          </div>
-        </details>
+        <div className="mobile-menu">
+          <button
+            type="button"
+            className="mobile-menu-toggle"
+            aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen(open => !open)}
+          >
+            {mobileMenuOpen ? "×" : "☰"}
+          </button>
+          {mobileMenuOpen && (
+            <div className="mobile-menu-panel">
+              <Link onClick={() => setMobileMenuOpen(false)} to="/">Home</Link>
+              <Link onClick={() => setMobileMenuOpen(false)} to="/transportation">Transportation</Link>
+              <Link onClick={() => setMobileMenuOpen(false)} to="/marketplace">Marketplace</Link>
+              <Link onClick={() => setMobileMenuOpen(false)} to="/community">Resources</Link>
+              {session && <Link onClick={() => setMobileMenuOpen(false)} to="/messages">Messages</Link>}
+              <Link onClick={() => setMobileMenuOpen(false)} to={session ? "/account" : "/register"}>{session ? "My Account" : "Sign In"}</Link>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );
