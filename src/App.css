@@ -3685,3 +3685,6 @@ legend {
 
 /* MOBILE MENU RELIABILITY */
 @media(max-width:850px){.mobile-menu.open .mobile-menu-toggle{position:relative;z-index:1202}.mobile-menu-backdrop{position:fixed;inset:0;z-index:1199;border:0;background:rgba(16,42,80,.18);padding:0}.mobile-menu-panel{position:absolute!important;z-index:1201!important}.mobile-menu-panel a{position:relative;z-index:1202}}
+
+/* MOBILE MENU BACKDROP FIX — outside sticky header stacking context */
+@media(max-width:850px){.mobile-menu-backdrop{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;z-index:998!important;border:0!important;margin:0!important;padding:0!important;background:rgba(16,42,80,.38)!important;cursor:default}.mobile-menu.open{z-index:1001}.mobile-menu.open .mobile-menu-toggle{z-index:1003}.mobile-menu-panel{z-index:1002!important}}
