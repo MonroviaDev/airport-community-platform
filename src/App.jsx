@@ -92,6 +92,8 @@ function Header({ session }) {
   }, [session]);
 
   return (
+    <>
+    {mobileMenuOpen && <button className="mobile-menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMobileMenuOpen(false)} />}
     <header>
       <Link className="brand" to="/" onClick={() => setMobileMenuOpen(false)}>
         <div className="brand-mark">A</div>
@@ -125,7 +127,6 @@ function Header({ session }) {
           </button>
           {mobileMenuOpen && (
             <>
-            <button className="mobile-menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMobileMenuOpen(false)} />
             <div className="mobile-menu-panel">
               <Link onClick={() => setMobileMenuOpen(false)} to="/">Home</Link>
               <Link onClick={() => setMobileMenuOpen(false)} to="/transportation">Transportation</Link>
@@ -146,6 +147,7 @@ function Header({ session }) {
         </Link>
       )}
     </header>
+    </>
   );
 }
 
