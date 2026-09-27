@@ -2597,6 +2597,8 @@ function Register({ session, authReady }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [recoveryMode, setRecoveryMode] = useState(false);
+  const [newAccountCreated, setNewAccountCreated] = useState(false);
+  const [identity, setIdentity] = useState({ firstName: "", lastInitial: "" });
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
 
@@ -2697,8 +2699,34 @@ function Register({ session, authReady }) {
       return;
     }
 
+    if (mode === "signup") {
+      setNewAccountCreated(true);
+      setStatus("idle");
+      setMessage("");
+      return;
+    }
     setStatus("success");
-    setMessage(mode === "signup" ? "Account created. You are signed in." : "Signed in.");
+    setMessage("Signed in.");
+  }
+
+  async function saveNewMemberIdentity(event) {
+    event.preventDefault();
+    setStatus("sending");
+    setMessage("");
+    try {
+      await saveMyMemberProfile({
+        firstName: identity.firstName,
+        lastInitial: identity.lastInitial,
+        currentCommuteMode: "",
+        sharedRideRole: "",
+      });
+      const returnTo = sessionStorage.getItem("airportAuthReturnTo") || "/account";
+      sessionStorage.removeItem("airportAuthReturnTo");
+      navigate(returnTo);
+    } catch (error) {
+      setStatus("error");
+      setMessage(error.message);
+    }
   }
 
   if (!isSupabaseConfigured) {
@@ -2722,6 +2750,23 @@ function Register({ session, authReady }) {
           <span className="eyebrow">SECURE ACCOUNT</span>
           <h1>Checking your sign-in…</h1>
         </div>
+      </main>
+    );
+  }
+
+  if (session && newAccountCreated) {
+    return (
+      <main className="page flow-page">
+        <form className="flow-card auth-flow-card" onSubmit={saveNewMemberIdentity}>
+          <span className="eyebrow">YOUR COMMUNITY IDENTITY</span>
+          <h1>How should members know you?</h1>
+          <p className="flow-intro">Airport Community shows your first name and last initial to other members. Your email remains private.</p>
+          <label>First name<input type="text" value={identity.firstName} onChange={(e) => setIdentity(v => ({ ...v, firstName: e.target.value }))} autoComplete="given-name" required /></label>
+          <label>Last initial<input type="text" value={identity.lastInitial} onChange={(e) => setIdentity(v => ({ ...v, lastInitial: e.target.value.replace(/[^A-Za-z]/g, "").slice(0,1).toUpperCase() }))} maxLength={1} placeholder="R" required /></label>
+          <div className="identity-preview"><small>OTHER MEMBERS WILL SEE</small><strong>{identity.firstName.trim() ? identity.firstName.trim() : "First Name"} {identity.lastInitial ? identity.lastInitial + "." : "L."}</strong></div>
+          <button className="email-button auth-submit" type="submit" disabled={status === "sending"}>{status === "sending" ? "Saving…" : "Continue"}</button>
+          {message && <div className="auth-message error" role="alert">{message}</div>}
+        </form>
       </main>
     );
   }
