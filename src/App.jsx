@@ -160,13 +160,11 @@ function Header({ session }) {
         </div>
       </div>
     </header>
-    {session && (
-      <Link className="mobile-messages-dock" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}>
-        <span className="dock-message-icon" aria-hidden="true">✉</span>
-        <span>Messages</span>
-        {unreadMessages > 0 && <span className="dock-unread-dot" aria-hidden="true" />}
-      </Link>
-    )}
+    <Link className="mobile-messages-dock" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}>
+      <span className="dock-message-icon" aria-hidden="true">✉</span>
+      <span>Messages</span>
+      {session && unreadMessages > 0 && <span className="dock-unread-dot" aria-hidden="true" />}
+    </Link>
     </>
   );
 }
