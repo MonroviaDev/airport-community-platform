@@ -63,6 +63,12 @@ function Header({ session }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    const closeMenu = () => setMobileMenuOpen(false);
+    window.addEventListener("popstate", closeMenu);
+    return () => window.removeEventListener("popstate", closeMenu);
+  }, []);
+
+  useEffect(() => {
     if (!session) {
       setUnreadMessages(0);
       return undefined;
@@ -87,7 +93,7 @@ function Header({ session }) {
 
   return (
     <header>
-      <Link className="brand" to="/">
+      <Link className="brand" to="/" onClick={() => setMobileMenuOpen(false)}>
         <div className="brand-mark">A</div>
         <div>
           <strong>Airport Community</strong>
@@ -107,7 +113,7 @@ function Header({ session }) {
         <Link className="signin-button" to={session ? "/account" : "/register"}>
           {session ? "My Account" : "Sign In"}
         </Link>
-        <div className="mobile-menu">
+        <div className={mobileMenuOpen ? "mobile-menu open" : "mobile-menu"}>
           <button
             type="button"
             className="mobile-menu-toggle"
@@ -118,6 +124,8 @@ function Header({ session }) {
             {mobileMenuOpen ? "×" : "☰"}
           </button>
           {mobileMenuOpen && (
+            <>
+            <button className="mobile-menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMobileMenuOpen(false)} />
             <div className="mobile-menu-panel">
               <Link onClick={() => setMobileMenuOpen(false)} to="/">Home</Link>
               <Link onClick={() => setMobileMenuOpen(false)} to="/transportation">Transportation</Link>
@@ -126,6 +134,7 @@ function Header({ session }) {
               {session && <Link onClick={() => setMobileMenuOpen(false)} to="/messages">Messages</Link>}
               <Link onClick={() => setMobileMenuOpen(false)} to={session ? "/account" : "/register"}>{session ? "My Account" : "Sign In"}</Link>
             </div>
+            </>
           )}
         </div>
       </div>
