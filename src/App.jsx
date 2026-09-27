@@ -2594,8 +2594,63 @@ function Register({ session, authReady }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [recoveryMode, setRecoveryMode] = useState(false);
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (!supabase) return undefined;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setRecoveryMode(true);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function sendPasswordRecovery() {
+    if (!email.trim()) {
+      setStatus("error");
+      setMessage("Enter your email address first.");
+      return;
+    }
+    setStatus("sending");
+    setMessage("");
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/register`,
+    });
+    if (error) {
+      setStatus("error");
+      setMessage(error.message);
+      return;
+    }
+    setStatus("success");
+    setMessage("Password reset email sent. Open the link in that email on this device.");
+  }
+
+  async function setNewPassword(event) {
+    event.preventDefault();
+    if (password.length < 8) {
+      setStatus("error");
+      setMessage("Use a password with at least 8 characters.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setStatus("error");
+      setMessage("Passwords do not match.");
+      return;
+    }
+    setStatus("sending");
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      setStatus("error");
+      setMessage(error.message);
+      return;
+    }
+    setStatus("success");
+    setMessage("Password saved. Your account is now signed in on this device.");
+    setRecoveryMode(false);
+    setPassword("");
+    setConfirmPassword("");
+  }
 
   async function submitAccount(event) {
     event.preventDefault();
@@ -2669,6 +2724,22 @@ function Register({ session, authReady }) {
     );
   }
 
+  if (recoveryMode) {
+    return (
+      <main className="page flow-page">
+        <form className="flow-card auth-flow-card" onSubmit={setNewPassword}>
+          <span className="eyebrow">PASSWORD RECOVERY</span>
+          <h1>Set a new password.</h1>
+          <p className="flow-intro">Choose a password with at least 8 characters for your Airport Community account.</p>
+          <label>New password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={8} required /></label>
+          <label>Confirm new password<input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" minLength={8} required /></label>
+          <button className="email-button auth-submit" type="submit" disabled={status === "sending"}>{status === "sending" ? "Saving…" : "Save New Password"}</button>
+          {message && <div className={status === "error" ? "auth-message error" : "auth-message success"} role={status === "error" ? "alert" : "status"}>{message}</div>}
+        </form>
+      </main>
+    );
+  }
+
   if (session) {
     const returnTo = sessionStorage.getItem("airportAuthReturnTo") || "/account";
     return (
@@ -2736,6 +2807,12 @@ function Register({ session, authReady }) {
         {message && (
           <div className={status === "error" ? "auth-message error" : "auth-message success"}
             role={status === "error" ? "alert" : "status"}>{message}</div>
+        )}
+
+        {mode === "signin" && (
+          <button type="button" className="skip-button" onClick={sendPasswordRecovery} disabled={status === "sending"}>
+            Forgot password?
+          </button>
         )}
 
         <button type="button" className="skip-button" onClick={() => {
