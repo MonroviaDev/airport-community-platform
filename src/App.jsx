@@ -160,11 +160,13 @@ function Header({ session }) {
         </div>
       </div>
     </header>
-    <Link className="mobile-messages-dock" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}>
-      <span className="dock-message-icon" aria-hidden="true">✉</span>
-      <span>Messages</span>
-      {session && unreadMessages > 0 && <span className="dock-unread-dot" aria-hidden="true" />}
-    </Link>
+    {session && (
+      <Link className="mobile-messages-dock" to="/messages" aria-label={unreadMessages ? `Messages, ${unreadMessages} unread` : "Messages"}>
+        <span className="dock-message-icon" aria-hidden="true">✉</span>
+        <span>Messages</span>
+        {unreadMessages > 0 && <span className="dock-unread-dot" aria-hidden="true" />}
+      </Link>
+    )}
     </>
   );
 }
@@ -2588,31 +2590,58 @@ function TransportationPreview() {
 
 function Register({ session, authReady }) {
   const navigate = useNavigate();
+  const [mode, setMode] = useState("signin");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
 
-  async function sendMagicLink(event) {
+  async function submitAccount(event) {
     event.preventDefault();
     setStatus("sending");
     setMessage("");
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/register`,
-        shouldCreateUser: true,
-      },
-    });
-
-    if (error) {
+    if (mode === "signup" && password !== confirmPassword) {
       setStatus("error");
-      setMessage(error.message);
+      setMessage("Passwords do not match.");
       return;
     }
 
-    setStatus("sent");
-    setMessage("Check your email and open the secure sign-in link.");
+    if (password.length < 8) {
+      setStatus("error");
+      setMessage("Use a password with at least 8 characters.");
+      return;
+    }
+
+    const result =
+      mode === "signup"
+        ? await supabase.auth.signUp({
+            email: email.trim(),
+            password,
+          })
+        : await supabase.auth.signInWithPassword({
+            email: email.trim(),
+            password,
+          });
+
+    if (result.error) {
+      setStatus("error");
+      setMessage(result.error.message);
+      return;
+    }
+
+    if (mode === "signup" && !result.data.session) {
+      setStatus("success");
+      setMessage("Account created. Check your email to confirm your address, then sign in.");
+      setMode("signin");
+      setPassword("");
+      setConfirmPassword("");
+      return;
+    }
+
+    setStatus("success");
+    setMessage(mode === "signup" ? "Account created. You are signed in." : "Signed in.");
   }
 
   if (!isSupabaseConfigured) {
@@ -2622,8 +2651,7 @@ function Register({ session, authReady }) {
           <span className="eyebrow">ACCOUNT SETUP</span>
           <h1>Secure sign-in is not configured.</h1>
           <p className="flow-intro">
-            Add the Supabase project URL and publishable key to your local
-            environment before testing employee accounts.
+            Add the Supabase project URL and publishable key before testing member accounts.
           </p>
         </div>
       </main>
@@ -2643,17 +2671,6 @@ function Register({ session, authReady }) {
 
   if (session) {
     const returnTo = sessionStorage.getItem("airportAuthReturnTo") || "/account";
-    const continueLabel =
-      returnTo === "/transportation-interest"
-        ? "Continue to Transportation Interest →"
-        : returnTo === "/skip-the-bus"
-          ? "Continue to Skip the Bus →"
-          : returnTo === "/driver-profile"
-            ? "Continue to Driver Profile →"
-            : returnTo === "/profile"
-              ? "Continue to My Profile →"
-              : "Continue →";
-
     return (
       <main className="page flow-page">
         <div className="flow-card auth-flow-card">
@@ -2662,7 +2679,7 @@ function Register({ session, authReady }) {
           <div className="auth-success" role="status">
             <span>✓</span>
             <div>
-              <strong>Your secure session is active.</strong>
+              <strong>Your account is active on this device.</strong>
               <small>{session.user.email}</small>
             </div>
           </div>
@@ -2673,10 +2690,7 @@ function Register({ session, authReady }) {
               navigate(returnTo);
             }}
           >
-            {continueLabel}
-          </button>
-          <button className="skip-button" onClick={() => navigate("/transportation")}>
-            Go to Transportation
+            Continue →
           </button>
         </div>
       </main>
@@ -2685,44 +2699,57 @@ function Register({ session, authReady }) {
 
   return (
     <main className="page flow-page">
-      <form className="flow-card auth-flow-card" onSubmit={sendMagicLink}>
+      <form className="flow-card auth-flow-card" onSubmit={submitAccount}>
         <span className="eyebrow">AIRPORT COMMUNITY ACCOUNT</span>
-        <h1>Sign in only when you need to.</h1>
-
+        <h1>{mode === "signup" ? "Create your account." : "Welcome back."}</h1>
         <p className="flow-intro">
-          Browsing Airport Community does not require an account. Sign in when
-          you want to save, post, message or connect with another member.
-          Enter your email and we’ll send one secure sign-in link.
+          {mode === "signup"
+            ? "Create one account for messaging, Marketplace, transportation and other Airport Community services."
+            : "Sign in to your Airport Community account. Browsing remains available without signing in."}
         </p>
 
         <label>
           Email address
-          <input
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            placeholder="you@example.com"
-            autoComplete="email"
-            required
-          />
+          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)}
+            placeholder="you@example.com" autoComplete="email" required />
         </label>
 
+        <label>
+          Password
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={8} />
+        </label>
+
+        {mode === "signup" && (
+          <label>
+            Confirm password
+            <input type="password" value={confirmPassword}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              autoComplete="new-password" required minLength={8} />
+          </label>
+        )}
+
         <button className="email-button auth-submit" type="submit" disabled={status === "sending"}>
-          {status === "sending" ? "Sending secure link…" : "Email Me a Sign-In Link"}
+          {status === "sending" ? "Please wait…" : mode === "signup" ? "Create Account" : "Sign In"}
         </button>
 
         {message && (
-          <div
-            className={status === "error" ? "auth-message error" : "auth-message success"}
-            role={status === "error" ? "alert" : "status"}
-          >
-            {message}
-          </div>
+          <div className={status === "error" ? "auth-message error" : "auth-message success"}
+            role={status === "error" ? "alert" : "status"}>{message}</div>
         )}
 
+        <button type="button" className="skip-button" onClick={() => {
+          setMode(mode === "signup" ? "signin" : "signup");
+          setMessage("");
+          setStatus("idle");
+          setPassword("");
+          setConfirmPassword("");
+        }}>
+          {mode === "signup" ? "Already a member? Sign In" : "New to Airport Community? Create Account"}
+        </button>
+
         <p className="privacy-note">
-          We use your email for account access and service notifications. Your
-          email is not shown to other members.
+          Your email is used for account access and service notifications and is not shown to other members.
         </p>
       </form>
     </main>
