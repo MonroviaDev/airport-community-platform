@@ -2594,6 +2594,8 @@ function Register({ session, authReady }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [recoveryMode, setRecoveryMode] = useState(false);
   const [status, setStatus] = useState("idle");
   const [message, setMessage] = useState("");
@@ -2731,8 +2733,8 @@ function Register({ session, authReady }) {
           <span className="eyebrow">PASSWORD RECOVERY</span>
           <h1>Set a new password.</h1>
           <p className="flow-intro">Choose a password with at least 8 characters for your Airport Community account.</p>
-          <label>New password<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={8} required /></label>
-          <label>Confirm new password<input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" minLength={8} required /></label>
+          <label>New password<div className="password-field"><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" minLength={8} required /><button type="button" className="password-toggle" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "👁"}</button></div></label>
+          <label>Confirm new password<div className="password-field"><input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} autoComplete="new-password" minLength={8} required /><button type="button" className="password-toggle" onClick={() => setShowConfirmPassword(v => !v)} aria-label={showConfirmPassword ? "Hide password" : "Show password"}>{showConfirmPassword ? "Hide" : "👁"}</button></div></label>
           <button className="email-button auth-submit" type="submit" disabled={status === "sending"}>{status === "sending" ? "Saving…" : "Save New Password"}</button>
           {message && <div className={status === "error" ? "auth-message error" : "auth-message success"} role={status === "error" ? "alert" : "status"}>{message}</div>}
         </form>
@@ -2787,16 +2789,16 @@ function Register({ session, authReady }) {
 
         <label>
           Password
-          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)}
-            autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={8} />
+          <div className="password-field"><input type={showPassword ? "text" : "password"} value={password} onChange={(event) => setPassword(event.target.value)}
+            autoComplete={mode === "signup" ? "new-password" : "current-password"} required minLength={8} /><button type="button" className="password-toggle" onClick={() => setShowPassword(v => !v)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? "Hide" : "👁"}</button></div>
         </label>
 
         {mode === "signup" && (
           <label>
             Confirm password
-            <input type="password" value={confirmPassword}
+            <div className="password-field"><input type={showConfirmPassword ? "text" : "password"} value={confirmPassword}
               onChange={(event) => setConfirmPassword(event.target.value)}
-              autoComplete="new-password" required minLength={8} />
+              autoComplete="new-password" required minLength={8} /><button type="button" className="password-toggle" onClick={() => setShowConfirmPassword(v => !v)} aria-label={showConfirmPassword ? "Hide password" : "Show password"}>{showConfirmPassword ? "Hide" : "👁"}</button></div>
           </label>
         )}
 
