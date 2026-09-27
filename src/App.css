@@ -3682,3 +3682,6 @@ legend {
 
 /* MOBILE MESSAGES DOCK — independent of header width */
 .mobile-messages-dock{display:none}@media(max-width:850px){.header-actions>.messages-button{display:none!important}.mobile-messages-dock{position:fixed;z-index:999;right:16px;bottom:18px;display:flex;align-items:center;gap:7px;padding:11px 15px;border:1px solid #c8dcf6;border-radius:999px;background:#fff;color:#145fae;font-size:13px;font-weight:800;box-shadow:0 8px 26px rgba(16,42,80,.22)}.dock-message-icon{font-size:24px;line-height:1}.dock-unread-dot{position:absolute;top:4px;right:7px;width:12px;height:12px;border:2px solid #fff;border-radius:50%;background:#1473e6;animation:messageDotPulse 1.8s ease-in-out 3}}
+
+/* MOBILE MENU RELIABILITY */
+@media(max-width:850px){.mobile-menu.open .mobile-menu-toggle{position:relative;z-index:1202}.mobile-menu-backdrop{position:fixed;inset:0;z-index:1199;border:0;background:rgba(16,42,80,.18);padding:0}.mobile-menu-panel{position:absolute!important;z-index:1201!important}.mobile-menu-panel a{position:relative;z-index:1202}}
