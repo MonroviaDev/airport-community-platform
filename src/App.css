@@ -3688,3 +3688,6 @@ legend {
 
 /* MOBILE MENU BACKDROP FIX — outside sticky header stacking context */
 @media(max-width:850px){.mobile-menu-backdrop{display:block!important;position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;z-index:998!important;border:0!important;margin:0!important;padding:0!important;background:rgba(16,42,80,.38)!important;cursor:default}.mobile-menu.open{z-index:1001}.mobile-menu.open .mobile-menu-toggle{z-index:1003}.mobile-menu-panel{z-index:1002!important}}
+
+/* MOBILE MENU LAYER ORDER FIX */
+@media(max-width:850px){header{z-index:1000!important}.mobile-menu-backdrop{z-index:999!important}.mobile-menu.open{position:relative;z-index:1001!important}.mobile-menu.open .mobile-menu-toggle{position:relative;z-index:1003!important}.mobile-menu.open .mobile-menu-panel{z-index:1002!important;pointer-events:auto!important}.mobile-menu-panel a{pointer-events:auto!important}}
