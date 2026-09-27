@@ -91,6 +91,26 @@ function Header({ session }) {
     };
   }, [session]);
 
+  useEffect(() => {
+    if (!session || !supabase) return undefined;
+
+    const channel = supabase
+      .channel(`global-message-notifications:${session.user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        payload => {
+          if (payload.new?.sender_id === session.user.id) return;
+          loadUnreadMessageCount()
+            .then(setUnreadMessages)
+            .catch(() => {});
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [session]);
+
   return (
     <>
     {mobileMenuOpen && <button className="mobile-menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMobileMenuOpen(false)} />}
