@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { loadConversation, markConversationRead, sendConversationMessage } from "../lib/communityMessaging";
+import { supabase } from "../lib/supabase";
 import "./Conversation.css";
 
 export default function Conversation({ session, authReady }) {
@@ -28,6 +29,36 @@ export default function Conversation({ session, authReady }) {
       }
     }).catch(err=>setError(err.message||"Unable to load this conversation."));
   },[id,session,authReady,navigate]);
+
+  useEffect(()=>{
+    if(!session || !id || !supabase) return undefined;
+
+    const channel = supabase
+      .channel(`conversation:${id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        async payload => {
+          const incoming = payload.new;
+          setData(current => {
+            if(!current || current.messages.some(message => message.id === incoming.id)) return current;
+            return { ...current, messages: [...current.messages, incoming] };
+          });
+
+          if(incoming.sender_id !== session.user.id){
+            try {
+              await markConversationRead(id);
+              window.dispatchEvent(new Event("airport-messages-read"));
+            } catch (readError) {
+              console.error("Unable to mark incoming message read", readError);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  },[id,session]);
 
   async function submit(e){
     e.preventDefault();
