@@ -12,6 +12,19 @@ export async function startMarketplaceConversation(listingId) {
   return data;
 }
 
+export async function loadConversationContext(conversationId) {
+  const c = client();
+  const { data, error } = await c.rpc("conversation_context", { conversation_uuid: conversationId });
+  if (error) throw error;
+  const context = Array.isArray(data) ? data[0] : data;
+  if (!context) return null;
+  if (context.context_image_url) {
+    const { data: publicUrlData } = c.storage.from("marketplace-images").getPublicUrl(context.context_image_url);
+    context.context_image_url = publicUrlData?.publicUrl || null;
+  }
+  return context;
+}
+
 export async function loadConversation(conversationId) {
   const c = client();
   const { data: userData, error: userError } = await c.auth.getUser();
@@ -27,7 +40,8 @@ export async function loadConversation(conversationId) {
     .from("messages").select("id,sender_id,body,created_at,read_at").eq("conversation_id", conversationId).order("created_at");
   if (messagesError) throw messagesError;
 
-  return { conversation, messages: messages || [], userId: user.id };
+  const context = await loadConversationContext(conversationId);
+  return { conversation, messages: messages || [], userId: user.id, context };
 }
 
 export async function sendConversationMessage(conversationId, body) {
