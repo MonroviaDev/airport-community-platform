@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
+import { gatewayMark, gatewayWordmark } from "./brandAssets";
 import Marketplace from "./Marketplace";
 import Jobs from "./Jobs";
 import Housing from "./Housing";
@@ -116,8 +117,9 @@ function Header({ session }) {
     {mobileMenuOpen && <button className="mobile-menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMobileMenuOpen(false)} />}
     <header>
       <Link className="brand" to="/" onClick={() => setMobileMenuOpen(false)}>
-        <div className="brand-mark" aria-hidden="true">G</div>
-        <div>
+        <img className="brand-wordmark" src={gatewayWordmark} alt="Gateway" />
+        <img className="brand-mark" src={gatewayMark} alt="" aria-hidden="true" />
+        <div className="brand-copy">
           <strong>Gateway</strong>
           <small>Your airport community</small>
         </div>
