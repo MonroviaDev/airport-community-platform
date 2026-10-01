@@ -45,19 +45,25 @@ header {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .brand-mark {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #0f3d74, #1769c2);
-  color: white;
-  display: grid;
-  place-items: center;
-  font-weight: 800;
-  font-size: 21px;
+  display: none;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
+.brand-wordmark {
+  display: block;
+  width: 202px;
+  height: auto;
+  object-fit: contain;
+}
+
+.brand-copy {
+  display: none;
 }
 
 .brand strong {
@@ -507,6 +513,9 @@ nav a:hover {
     padding: 0 14px;
   }
 
+  .brand-wordmark{display:none}
+  .brand-mark{display:block;flex:0 0 auto}
+  .brand-copy{display:block;min-width:0}
   .mobile-menu{display:block}
   .brand small{display:none}
   .messages-button span{display:none}
