@@ -24,6 +24,14 @@
 .listing-card:hover{transform:translateY(-4px);border-color:#c8d9e9;box-shadow:0 15px 30px rgba(22,52,93,.11)}
 .listing-card:focus-visible,.market-categories button:focus-visible,.market-hero button:focus-visible{outline:3px solid rgba(20,115,230,.3);outline-offset:3px}
 .listing-image{position:relative;height:184px;background:linear-gradient(145deg,#eef4f8,#f8fafb);font-size:54px}
+.listing-card--photo .listing-image{height:100%;min-height:360px}
+.listing-card--photo .listing-image:after{position:absolute;inset:30% 0 0;content:"";background:linear-gradient(180deg,transparent,rgba(4,24,48,.92))}
+.listing-overlay{position:absolute;z-index:1;right:0;bottom:0;left:0;display:grid;gap:7px;padding:24px;color:white;text-shadow:0 1px 5px rgba(0,0,0,.3)}
+.listing-overlay .market-category{justify-self:start;border-radius:999px;background:rgba(255,255,255,.92);padding:5px 8px;color:#135e9d;text-shadow:none}
+.listing-overlay h2{margin:0;font-size:22px;line-height:1.15}
+.listing-overlay p{display:-webkit-box;overflow:hidden;margin:0;color:#eef6ff;font-size:13px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.listing-overlay-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:4px;font-size:12px}
+.listing-overlay-footer strong{font-size:22px}
 .listing-body{padding:17px 18px 19px}
 .market-category{padding:5px 8px;border-radius:999px;background:#eff5fb;color:#32668d;font-size:10px;letter-spacing:.65px}
 .listing-body h2{min-height:48px;margin:11px 0 8px;color:#1b3554;font-size:17px;line-height:1.35}
