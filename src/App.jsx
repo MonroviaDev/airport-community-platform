@@ -116,10 +116,10 @@ function Header({ session }) {
     {mobileMenuOpen && <button className="mobile-menu-backdrop" type="button" aria-label="Close navigation menu" onClick={() => setMobileMenuOpen(false)} />}
     <header>
       <Link className="brand" to="/" onClick={() => setMobileMenuOpen(false)}>
-        <div className="brand-mark">A</div>
+        <div className="brand-mark" aria-hidden="true">G</div>
         <div>
-          <strong>Airport Community</strong>
-          <small>Connect • Commute • Community</small>
+          <strong>Gateway</strong>
+          <small>Your airport community</small>
         </div>
       </Link>
 
@@ -173,92 +173,92 @@ function Header({ session }) {
 
 function Home() {
   return (
-    <main>
-      <section className="hero">
-        <div className="hero-content">
-          <span className="eyebrow">AIRPORT EMPLOYEE COMMUNITY</span>
-
-          <h1>
-            Work at the airport.
-            <br />
-            Connect beyond it.
-          </h1>
-
+    <main className="gateway-home">
+      <section className="help-hero">
+        <div className="help-hero-copy">
+          <span className="eyebrow">WELCOME TO GATEWAY</span>
+          <h1>How can we help you today?</h1>
           <p>
-            Transportation, community resources, opportunities and practical
-            solutions designed around the people who keep airports moving.
+            Find practical help, useful opportunities and trusted connections
+            across the airport community.
           </p>
-
-          <div className="hero-buttons">
-            <Link className="primary-button" to="/transportation">
-              Find Transportation
-            </Link>
-
-            <Link className="secondary-button" to="/community">
-              Explore Community
-            </Link>
+        </div>
+        <div className="community-note" aria-label="Gateway community statement">
+          <span className="community-note-icon" aria-hidden="true">✦</span>
+          <div>
+            <strong>Built around airport life</strong>
+            <p>One place for the people, schedules and everyday needs that keep the airport moving.</p>
           </div>
         </div>
       </section>
 
-      <section className="section">
+      <section className="help-section" aria-labelledby="help-options-heading">
         <div className="section-heading">
-          <span className="eyebrow">START HERE</span>
-          <h2>What can we help you with?</h2>
+          <span className="eyebrow">CHOOSE WHAT YOU NEED</span>
+          <h2 id="help-options-heading">Where would you like to start?</h2>
         </div>
 
-        <div className="card-grid">
+        <div className="help-grid">
           <FeatureCard
             icon="🚐"
-            title="Transportation"
-            text="Find rides, carpools, vanpools, transit and final-mile connections."
+            title="Get to or from work"
+            text="Compare transit, carpools, vanpools and shared rides built around your shift."
             link="/transportation"
             active
+            featured
           />
 
           <FeatureCard
             icon="🛍️"
-            title="Marketplace"
-            text="Buy, sell and exchange items with the airport community."
+            title="Buy or sell something"
+            text="Browse and post listings within the airport community."
             link="/marketplace"
           />
 
           <FeatureCard
-            icon="👶"
-            title="Childcare"
-            text="Find childcare resources that understand airport schedules."
-            link="/childcare"
-          />
-
-          <FeatureCard
-            icon="🏠"
-            title="Housing & Rentals"
-            text="Explore rentals, roommates and housing opportunities."
-            link="/housing"
-          />
-
-          <FeatureCard
             icon="💼"
-            title="Jobs / Now Hiring"
-            text="Discover opportunities throughout the airport community."
+            title="Find a job"
+            text="Explore airport and nearby employment opportunities."
             link="/jobs"
           />
 
           <FeatureCard
+            icon="🏠"
+            title="Find housing"
+            text="Explore rooms, rentals and potential roommates."
+            link="/housing"
+          />
+
+          <FeatureCard
+            icon="👶"
+            title="Find childcare"
+            text="Find care resources that understand nontraditional airport schedules."
+            link="/childcare"
+          />
+
+          <FeatureCard
             icon="🤝"
-            title="Community Resources"
-            text="Find useful programs and resources for airport employees."
+            title="Get community help"
+            text="Find useful services, programs and local resources."
             link="/community"
           />
+        </div>
+
+        <div className="home-footer-prompt">
+          <div>
+            <span className="eyebrow">STAY CONNECTED</span>
+            <h2>Your community goes beyond the terminal.</h2>
+          </div>
+          <Link className="secondary-button" to="/register">Join Gateway</Link>
         </div>
       </section>
     </main>
   );
 }
 
-function FeatureCard({ icon, title, text, link, active }) {
+function FeatureCard({ icon, title, text, link, active, featured }) {
   return (
-    <Link className="feature-card" to={link}>
+    <Link className={featured ? "feature-card featured" : "feature-card"} to={link}>
       <div className="feature-icon">{icon}</div>
 
       {active && <span className="available">AVAILABLE NOW</span>}
@@ -267,7 +267,7 @@ function FeatureCard({ icon, title, text, link, active }) {
       <p>{text}</p>
 
       <span className="learn-more">
-        {active ? "Get started →" : "Learn more →"}
+        {active ? "Explore my options" : "Open this section"}
       </span>
     </Link>
   );
