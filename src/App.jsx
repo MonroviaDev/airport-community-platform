@@ -10,6 +10,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import "./App.css";
 import { gatewayMark, gatewayWordmark } from "./brandAssets";
 import Marketplace from "./Marketplace";
+import GatewayAssistant from "./components/GatewayAssistant";
 import Jobs from "./Jobs";
 import Housing from "./Housing";
 import Childcare from "./Childcare";
@@ -174,88 +175,7 @@ function Header({ session }) {
 }
 
 function Home() {
-  return (
-    <main className="gateway-home">
-      <section className="help-hero">
-        <div className="help-hero-copy">
-          <span className="eyebrow">WELCOME TO GATEWAY</span>
-          <h1>How can we help you today?</h1>
-          <p>
-            Find practical help, useful opportunities and trusted connections
-            across the airport community.
-          </p>
-        </div>
-        <div className="community-note" aria-label="Gateway community statement">
-          <span className="community-note-icon" aria-hidden="true">✦</span>
-          <div>
-            <strong>Built around airport life</strong>
-            <p>One place for the people, schedules and everyday needs that keep the airport moving.</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="help-section" aria-labelledby="help-options-heading">
-        <div className="section-heading">
-          <span className="eyebrow">CHOOSE WHAT YOU NEED</span>
-          <h2 id="help-options-heading">Where would you like to start?</h2>
-        </div>
-
-        <div className="help-grid">
-          <FeatureCard
-            icon="🚐"
-            title="Get to or from work"
-            text="Compare transit, carpools, vanpools and shared rides built around your shift."
-            link="/transportation"
-            active
-            featured
-          />
-
-          <FeatureCard
-            icon="🛍️"
-            title="Buy or sell something"
-            text="Browse and post listings within the airport community."
-            link="/marketplace"
-          />
-
-          <FeatureCard
-            icon="💼"
-            title="Find a job"
-            text="Explore airport and nearby employment opportunities."
-            link="/jobs"
-          />
-
-          <FeatureCard
-            icon="🏠"
-            title="Find housing"
-            text="Explore rooms, rentals and potential roommates."
-            link="/housing"
-          />
-
-          <FeatureCard
-            icon="👶"
-            title="Find childcare"
-            text="Find care resources that understand nontraditional airport schedules."
-            link="/childcare"
-          />
-
-          <FeatureCard
-            icon="🤝"
-            title="Get community help"
-            text="Find useful services, programs and local resources."
-            link="/community"
-          />
-        </div>
-
-        <div className="home-footer-prompt">
-          <div>
-            <span className="eyebrow">STAY CONNECTED</span>
-            <h2>Your community goes beyond the terminal.</h2>
-          </div>
-          <Link className="secondary-button" to="/register">Join Gateway</Link>
-        </div>
-      </section>
-    </main>
-  );
+  return <GatewayAssistant />;
 }
 
 function FeatureCard({ icon, title, text, link, active, featured }) {
